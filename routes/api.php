@@ -20,11 +20,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-
 Route::middleware('secret_key_is_valid')->group( function () {
     Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/validate', [AuthController::class, 'validateToken']);
 
-    // Route::middleware('auth:sanctum')->group( function () {
+    Route::middleware('auth:sanctum')->group( function () {
         Route::get('/logout', [AuthController::class, 'logout']);
 
         Route::group(['prefix' => 'achievement-agent'], function () {
@@ -54,7 +54,7 @@ Route::middleware('secret_key_is_valid')->group( function () {
             Route::get('/{id}', [ClosingController::class, 'show'])
                 ->whereUuid('id');
         });
-    // });
+    });
 });
 
 use Illuminate\Support\Facades\Hash;

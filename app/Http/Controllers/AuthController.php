@@ -33,6 +33,7 @@ class AuthController extends Controller
         $token =  $user->createToken(
             name: 'WebToken',
             expiresAt: now()->addMonth(1),
+            // expiresAt: now()->addSecond(10),
         );
 
         return response()->json([
@@ -58,6 +59,11 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Successfully logged out'
         ], 200);
+    }
+
+    public function validateToken(Request $request)
+    {
+        return response()->json($request->user('sanctum') ? true : false);
     }
 
     private function getContact($userId)
