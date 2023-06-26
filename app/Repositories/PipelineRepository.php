@@ -171,6 +171,7 @@ class PipelineRepository
         $newItem['Id'] = $item->Id;
         $newItem['CreatedOn'] = $item->CreatedOn; 
         $newItem['ModifiedOn'] = $item->ModifiedOn;
+        $newItem['created_by'] = $item->created_by->getDisplayValue();
         $newItem['MdrTanggalAktifitasBerkahir'] = $item->MdrTanggalAktifitasBerkahir;
         $newItem['kanal'] = !empty($item->kanal) ? $item->kanal->getDisplayValue() : "";
         $newItem['agent'] = !empty($item->agent) ? $item->agent->getDisplayValue() : "";
@@ -237,6 +238,7 @@ class PipelineRepository
             ->with('perkiraan_closing')
             ->with('quotation')
             ->with('update_aktifitas')
+            ->with('created_by')
             ->addSelect(array_map(function($item) {
                 return 'MdrPipeline.'.$item;
             }, array_keys($this->column())));
@@ -291,6 +293,7 @@ class PipelineRepository
             'MdrStatusAktivitas' => 'string',
             'MdrTanggalAktifitasBerkahir' => 'datetime',
             'MdrKeteranganProgres' => 'string',
+            'CreatedById' => 'guid'
         ];
     }
 }
