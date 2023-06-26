@@ -35,6 +35,11 @@ Route::middleware('secret_key_is_valid')->group( function () {
             Route::get('/', [PipelineController::class, 'index']);
             Route::get('/{id}', [PipelineController::class, 'show'])
                 ->whereUuid('id');
+            Route::post('/', [PipelineController::class, 'store']);
+            Route::put('/{id}', [PipelineController::class, 'update'])
+                ->whereUuid('id');
+            Route::delete('/{id}', [PipelineController::class, 'destroy'])
+                ->whereUuid('id');
         });
 
         Route::group(['prefix' => 'sales-activity'], function () {
@@ -70,3 +75,30 @@ Route::get('/get-uuid/{total?}', function ($total = 1) {
     }
 })
 ->whereNumber('total');
+
+
+use App\Services\CreatioService;
+Route::get('/test', function(Request $request) {
+    // $creatio = new CreatioService("Supervisor", "Supervisor");
+
+    // $id = 'b8f5cb73-0153-4123-b30d-03e3817f984f';
+    // $response = $creatio->oData4('MdrPipeline')
+    //     ->delete($id);
+
+    // $response = $creatio->oData4('EmployeeJob')
+    //     ->post([
+    //         'Name' => 'Test Laravel 8'
+    //     ]);
+
+    // return response()->json($response);
+    // return $response;
+
+    $string = "CreatedById";
+    // echo substr($string, 0, 3);
+    echo substr($string, 0, -2);
+});
+
+use Illuminate\Support\Facades\Crypt;
+Route::get('/test-password', function(Request $request) {
+    echo Crypt::encryptString($request->password);
+});

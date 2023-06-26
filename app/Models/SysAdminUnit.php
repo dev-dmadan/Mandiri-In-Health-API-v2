@@ -7,7 +7,7 @@ class SysAdminUnit extends CreatioModel
     protected $table = 'SysAdminUnit';
     public $displayValue = 'Name';
 
-    public function contact()
+    public function Contact()
     {
         return $this->belongsTo(Contact::class, 'ContactId', 'Id');
     }

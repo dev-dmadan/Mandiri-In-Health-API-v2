@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Contact;
+use App\Models\TreeTest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -16,14 +17,35 @@ use Illuminate\Support\Facades\Schema;
 |
 */
 
-Route::get('/', function () {
-    $columns = [];
-    foreach (Schema::getColumnListing('MdrQuotation') as $column) {
-        $columns[] = [
-            'name' => $column,
-            'type' => Schema::getColumnType('MdrQuotation', $column)
-        ];
+Route::get('/', function() {
+
+    function buildTree($data, $parentId = null)
+    {
+        $result = [];
+
+        foreach ($data as $row) {
+            if ($row['ParentId'] === $parentId) {
+                $children = buildTree($data, $row['Id']);
+
+                if (!empty($children)) {
+                    $row['children'] = $children;
+                }
+
+                $result[] = $row;
+            }
+        }
+
+        return $result;
     }
 
-    dd($columns);
+    $data = TreeTest::with('descendants')->get()
+        // ->map(function($item) {
+        //     unset($item->descendants);
+        //     return $item;
+        // })
+        ->toArray();
+        return response()->json($data);
+
+    $result = buildTree($data);
+    return response()->json($result);
 });

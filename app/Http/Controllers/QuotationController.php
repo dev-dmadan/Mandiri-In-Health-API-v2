@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Quotation;
 use App\Repositories\QuotationRepository;
 use Illuminate\Http\Request;
 
@@ -32,33 +33,37 @@ class QuotationController extends Controller
         
         switch ($type) {
             case 'top-5':
-                $data = $this->quotationRepo->getAll(contactId: $contactId)
-                    ->leftJoin('MdrPipeline', 'MdrPipeline.Id', '=', 'MdrQuotation.MdrBUNameId')
-                    ->orderBy('MdrPipeline.MdrPremiDisetahunkan', 'DESC')
-                    ->take(5)
-                    ->get()
-                    ->map(function($item) {
-                        return $this->quotationRepo->mapResponse($item, $this->quotationRepo->top5Quotationmage);
-                    });
+                $data = empty($contactId) ? 
+                    $this->emptyQuotation()->get() : 
+                    $this->quotationRepo->getAll(contactId: $contactId)
+                        ->leftJoin('MdrPipeline', 'MdrPipeline.Id', '=', 'MdrQuotation.MdrBUNameId')
+                        ->orderBy('MdrPipeline.MdrPremiDisetahunkan', 'DESC')
+                        ->take(5)
+                        ->get()
+                        ->map(function($item) {
+                            return $this->quotationRepo->mapResponse($item, $this->quotationRepo->top5Quotationmage);
+                        });
                 break;
             
             default:
-                $data = $this->quotationRepo->getAll(
-                    contactId: $contactId,
-                    filter: [
-                        'search' => $search,
-                        'kanalId' => $kanalId,
-                        'produkId' => $produkId,
-                        'kepalaUnitId' => $kepalaUnitId,
-                        'agentId' => $agentId,
-                        'statusId' => $statusId,
-                    ]
-                )
-                ->orderBy('CreatedOn', 'DESC')
-                ->paginate($perPage)
-                ->through(function ($item, $key) {                
-                    return $this->quotationRepo->mapResponse($item, $this->quotationRepo->quotationmage);
-                });
+                $data = empty($contactId) ? 
+                    $this->emptyQuotation()->paginate($perPage) : 
+                    $this->quotationRepo->getAll(
+                        contactId: $contactId,
+                        filter: [
+                            'search' => $search,
+                            'kanalId' => $kanalId,
+                            'produkId' => $produkId,
+                            'kepalaUnitId' => $kepalaUnitId,
+                            'agentId' => $agentId,
+                            'statusId' => $statusId,
+                        ]
+                    )
+                    ->orderBy('CreatedOn', 'DESC')
+                    ->paginate($perPage)
+                    ->through(function ($item, $key) {                
+                        return $this->quotationRepo->mapResponse($item, $this->quotationRepo->quotationmage);
+                    });
 
                 break;
         }
@@ -69,5 +74,10 @@ class QuotationController extends Controller
     public function show($id)
     {
         return response()->json($this->quotationRepo->get($id));
+    }
+
+    private function emptyQuotation()
+    {
+        return Quotation::whereNull('Id');
     }
 }

@@ -7,19 +7,20 @@ use App\Models\Contact;
 use App\Services\CreatioService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 
 class AuthController extends Controller
 {
     protected $creatio;
 
-    public function __construct(CreatioService $creatio)
+    public function __construct(Request $request)
     {
-        $this->creatio = $creatio;
+        $this->creatio = new CreatioService($request->username, $request->password);
     }
 
     public function login(Request $request)
     {
-        $tryLogin = $this->creatio->login($request->username, $request->password);
+        $tryLogin = $this->creatio->login();
         if(!$tryLogin->success) { 
             return response()->json([   
                 'success' => false,
@@ -41,6 +42,7 @@ class AuthController extends Controller
             'message' => 'Login successfully',
             'user' => [
                 'username' => $user->username,
+                '_password' => Crypt::encryptString($request->password),
                 'name' => $contact->contact_name,
                 'contact_id' => $contact->contact_id,
                 'kanal_id' => $contact->kanal_id,
@@ -68,10 +70,10 @@ class AuthController extends Controller
 
     private function getContact($userId)
     {
-        return Contact::with('kanal')
-            ->with('agent')
-            ->with('user')
-            ->with('type')
+        return Contact::with('KANALDISTRIBUSI')
+            ->with('LNAMAAGEN')
+            ->with('User')
+            ->with('Type')
             ->select(
                 'MdrLKANALDISTRIBUSIId',
                 'MdrLNAMAAGENId',
@@ -79,7 +81,7 @@ class AuthController extends Controller
                 'Id', 
                 'Name'
             )
-            ->whereHas('user', function($query) use($userId) {
+            ->whereHas('User', function($query) use($userId) {
                 $query->where('Id', $userId);
             })
             ->get()

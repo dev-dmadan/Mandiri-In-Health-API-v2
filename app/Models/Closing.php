@@ -7,22 +7,22 @@ class Closing extends CreatioModel
     protected $table = 'MdrClosing';
     public $displayValue = 'MdrName';
 
-    public function pipeline()
+    public function Pipeline()
     {
         return $this->belongsTo(Pipeline::class, 'MdrPipelineId', 'Id');
     }
 
-    public function quotation()
+    public function Quotation()
     {
         return $this->belongsTo(Quotation::class, 'MdrQuotationId', 'Id');
     }
 
-    public function status()
+    public function ClosingStatus()
     {
         return $this->belongsTo(StatusClosing::class, 'MdrClosingStatusId', 'Id');
     }
 
-    public function produk()
+    public function Product()
     {
         return $this->belongsTo(Produk::class, 'MdrProductId', 'Id');
     }

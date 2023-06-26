@@ -21,12 +21,12 @@ class CreatioModel extends Model
         return $this->{$this->displayValue};
     }
 
-    public function created_by()
+    public function CreatedBy()
     {
         return $this->belongsTo(Contact::class, 'CreatedById', 'Id');
     }
 
-    public function modified_by()
+    public function ModifiedBy()
     {
         return $this->belongsTo(Contact::class, 'ModifiedById', 'Id');
     }

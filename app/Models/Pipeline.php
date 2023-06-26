@@ -7,127 +7,127 @@ class Pipeline extends CreatioModel
     protected $table = 'MdrPipeline';
     public $displayValue = 'MdrName';
 
-    public function kanal()
+    public function KanalDistribusi()
     {
         return $this->belongsTo(Kanal::class, 'MdrKanalDistribusiId', 'Id');
     }
 
-    public function agent()
+    public function InsuranceAgent()
     {
         return $this->belongsTo(Agent::class, 'MdrInsuranceAgentId', 'Id');
     }
 
-    public function kepala_unit()
+    public function KaUnit()
     {
         return $this->belongsTo(KepalaUnit::class, 'MdrKaUnitId', 'Id');
     }
 
-    public function kepala_kanal()
+    public function KepalaKPM()
     {
         return $this->belongsTo(KepalaKanal::class, 'MdrKepalaKPMId', 'Id');
     }
 
-    public function produk()
+    public function Produk()
     {
         return $this->belongsTo(Produk::class, 'MdrProdukId', 'Id');
     }
 
-    public function status()
+    public function Status()
     {
         return $this->belongsTo(StatusPipeline::class, 'MdrStatusId', 'Id');
     }
 
-    public function status_polis()
+    public function PolisStatus()
     {
         return $this->belongsTo(StatusPolis::class, 'MdrPolisStatusId', 'Id');
     }
 
-    public function kategori_asuransi_eksisting()
+    public function KategoriAsuransiEksisting()
     {
         return $this->belongsTo(KategoriAsuransiEksisting::class, 'MdrKategoriAsuransiEksistingId', 'Id');
     }
 
-    public function asuransi_eksisting()
+    public function AsuransiEksisting()
     {
         return $this->belongsTo(AsuransiEksisting::class, 'MdrAsuransiEksistingId', 'Id');
     }
 
-    public function broker()
+    public function BrokerName()
     {
         return $this->belongsTo(Broker::class, 'MdrBrokerNameId', 'Id');
     }
 
-    public function co_insurance()
+    public function CoInsurance()
     {
         return $this->belongsTo(CoInsurance::class, 'MdrCoInsuranceId', 'Id');
     }
 
-    public function syariah()
+    public function Syariah()
     {
         return $this->belongsTo(Komitmen::class, 'MdrSyariahId', 'Id');
     }
 
-    public function kepemilikan_bu()
+    public function KepemilikanBU()
     {
         return $this->belongsTo(KepemilikanBU::class, 'MdrKepemilikanBUId', 'Id');
     }
 
-    public function provinsi()
+    public function Provinsi()
     {
         return $this->belongsTo(Provinsi::class, 'MdrProvinsiId', 'Id');
     }
 
-    public function kabupaten()
+    public function Kabupaten()
     {
         return $this->belongsTo(Kabupaten::class, 'MdrKabupatenId', 'Id');
     }
 
-    public function kecamatan()
+    public function Kecamatan()
     {
         return $this->belongsTo(Kecamatan::class, 'MdrKecamatanId', 'Id');
     }
 
-    public function kelurahan()
+    public function Kelurahan()
     {
         return $this->belongsTo(Kelurahan::class, 'MdrKelurahanId', 'Id');
     }
 
-    public function kode_pos()
+    public function KodePosLookup()
     {
         return $this->belongsTo(KodePos::class, 'MdrKodePosLookupId', 'Id');
     }
 
-    public function wilayah_badan_usaha()
+    public function WilayahBadanUsaha()
     {
         return $this->belongsTo(WilayahBadanUsaha::class, 'MdrWilayahBadanUsahaId', 'Id');
     }
 
-    public function sektor_industri()
+    public function SektorIndustri()
     {
         return $this->belongsTo(AccountIndustry::class, 'MdrSektorIndustriId', 'Id');
     }
 
-    public function sinergi_bank_mandiri()
+    public function SinergiBankMandiri()
     {
         return $this->belongsTo(SinergiBankMandiri::class, 'MdrSinergiBankMandiriId', 'Id');
     }
 
-    public function termin_bayar()
+    public function TerminBayar()
     {
         return $this->belongsTo(CaraBayar::class, 'MdrTerminBayarId', 'Id');
     }
 
-    public function perkiraan_closing()
+    public function PerkiraanClosing()
     {
         return $this->belongsTo(MonthYear::class, 'MdrPerkiraanClosingId', 'Id');
     }
 
-    public function quotation()
+    public function Quotation()
     {
         return $this->belongsTo(Quotation::class, 'MdrQuotationId', 'Id');
     }
 
-    public function update_aktifitas()
+    public function UpdateAktifitas()
     {
         return $this->belongsTo(StatusPipeline::class, 'MdrUpdateAktifitasId', 'Id');
     }

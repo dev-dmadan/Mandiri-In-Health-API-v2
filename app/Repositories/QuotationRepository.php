@@ -23,7 +23,7 @@ class QuotationRepository
         $isAE = strtolower($type) == '806732ee-f36b-1410-a883-16d83cab0980';
 
         $data = $this->select()
-            ->whereHas('badan_usaha', function($query) use($contactId, $kanal, $isKAKANIT, $isKAKANAL, $isAE) {
+            ->whereHas('BUName', function($query) use($contactId, $kanal, $isKAKANIT, $isKAKANAL, $isAE) {
                 $query->when($isAE, function ($q) use($contactId) {
                     $q->where('CreatedById', $contactId);
                 })
@@ -98,7 +98,10 @@ class QuotationRepository
         $newItem = [];
 
         $stringColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'string';
+            return $value == 'string' || $value == 'datetime';
+        }, ARRAY_FILTER_USE_BOTH);
+        $guidColumn = array_filter($this->column(), function($value, $key) {
+            return $value == 'guid';
         }, ARRAY_FILTER_USE_BOTH);
         $floatColumn = array_filter($this->column(), function($value, $key) {
             return $value == 'float';
@@ -119,27 +122,19 @@ class QuotationRepository
             $newItem[$key] = (bool)$item->{$key};
         }
 
-        $badanUsaha = !empty($item->badan_usaha) ? $item->badan_usaha : null;
+        foreach ($guidColumn as $key => $value) {
+            $prefix = substr($key, 0, 3);
+            $lookupProp = $prefix == 'Mdr' ? substr($key, 3, -2) : substr($key, 0, -2);
+            $newItem[$lookupProp] = !empty($item->{$lookupProp}) ? $item->{$lookupProp}->getDisplayValue() : "";
+        }
+
+        $BUName = !empty($item->BUName) ? $item->BUName : null;
         
         $newItem['Id'] = $item->Id;
-        $newItem['CreatedOn'] = $item->CreatedOn; 
-        $newItem['ModifiedOn'] = $item->ModifiedOn; 
-        $newItem['MdrInsuranceStartDate'] = $item->MdrInsuranceStartDate;
-        $newItem['MdrInsuranceEndDate'] = $item->MdrInsuranceEndDate;
-        $newItem['kanal'] = !empty($item->kanal) ? $item->kanal->getDisplayValue() : "";
-        $newItem['badan_usaha'] = !empty($badanUsaha) ? $badanUsaha->getDisplayValue() : "";
-        $newItem['alamat'] = !empty($badanUsaha) ? $badanUsaha->MdrAlamat : "";
-        $newItem['kode_pos'] = !empty($badanUsaha) ? (!empty($badanUsaha->kode_pos) ? $badanUsaha->kode_pos->getDisplayValue() : "") : "";
-        $newItem['gwp'] = !empty($badanUsaha) ? 'IDR '.number_format((float)$badanUsaha->MdrGWP, 2) : "IDR 0.00";
-        $newItem['created_by'] = !empty($badanUsaha) ? (!empty($badanUsaha->created_by) ? $badanUsaha->created_by->getDisplayValue() : "") : "";
-        $newItem['status'] = !empty($item->status) ? $item->status->getDisplayValue() : "";
-        $newItem['agent'] = !empty($item->agent) ? $item->agent->getDisplayValue() : "";
-        $newItem['kepala_unit'] = !empty($item->kepala_unit) ? $item->kepala_unit->MdrName : "";
-        $newItem['kepala_kanal'] = !empty($item->kepala_kanal) ? $item->kepala_kanal->MdrName : "";
-        $newItem['produk'] = !empty($item->produk) ? $item->produk->MdrName : "";
-        $newItem['skema_produk'] = !empty($item->skema_produk) ? $item->skema_produk->getDisplayValue() : "";
-        $newItem['tujuan_klaim_reimburse_pengajuan'] = !empty($item->tujuan_klaim_reimburse_pengajuan) ? $item->tujuan_klaim_reimburse_pengajuan->Name : "";
-        $newItem['tujuan_klaim_reimburse_disetujui'] = !empty($item->tujuan_klaim_reimburse_disetujui) ? $item->tujuan_klaim_reimburse_disetujui->Name : "";
+        $newItem['Alamat'] = !empty($BUName) ? $BUName->MdrAlamat : "";
+        $newItem['KodePos'] = !empty($BUName) ? (!empty($BUName->KodePosLookup) ? $BUName->KodePosLookup->getDisplayValue() : "") : "";
+        $newItem['GWP'] = !empty($BUName) ? 'IDR '.number_format((float)$BUName->MdrGWP, 2) : "IDR 0.00";
+        $newItem['CreatedBy'] = !empty($BUName) ? (!empty($BUName->CreatedBy) ? $BUName->CreatedBy->getDisplayValue() : "") : "";
         $newItem['image'] = [
             'id' => 0,
             'full' => [
@@ -154,16 +149,16 @@ class QuotationRepository
     }
 
     private function select() {
-        return Quotation::with('kanal')
-            ->with('badan_usaha')
-            ->with('status')
-            ->with('agent')
-            ->with('kepala_unit')
-            ->with('kepala_kanal')
-            ->with('produk')
-            ->with('skema_produk')
-            ->with('tujuan_klaim_reimburse_pengajuan')
-            ->with('tujuan_klaim_reimburse_disetujui')
+        return Quotation::with('KanalDistribusi')
+            ->with('BUName')
+            ->with('QuotationStatus')
+            ->with('AgentName')
+            ->with('KAUNIT')
+            ->with('KepalaKanal')
+            ->with('Product')
+            ->with('SkemaProduct')
+            ->with('TujuanKlaimReimbursePengajuan')
+            ->with('TujuanKlaimReimburseDiSetujui')
             ->addSelect(array_map(function($item) {
                 return 'MdrQuotation.'.$item;
             }, array_keys($this->column())));
@@ -182,7 +177,7 @@ class QuotationRepository
             'MdrSkemaProductId' => 'guid',
             'MdrTujuanKlaimReimbursePengajuanId' => 'guid',
             'MdrTujuanKlaimReimburseDiSetujuiId' => 'guid',
-            'Id' => '',
+            'Id' => 'guid|primary',
             'CreatedOn' => 'datetime', 
             'ModifiedOn'=> 'datetime', 
             'MdrInsuranceStartDate' => 'datetime',

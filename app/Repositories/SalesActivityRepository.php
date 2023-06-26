@@ -23,7 +23,7 @@ class SalesActivityRepository
         $isAE = strtolower($type) == '806732ee-f36b-1410-a883-16d83cab0980';
 
         $data = $this->select()
-            ->whereHas('pipeline', function($query) use($contactId, $kanal, $isKAKANIT, $isKAKANAL, $isAE) {
+            ->whereHas('Pipeline', function($query) use($contactId, $kanal, $isKAKANIT, $isKAKANAL, $isAE) {
                 $query->when($isAE, function ($q) use($contactId) {
                     $q->where('CreatedById', $contactId);
                 })
@@ -92,7 +92,10 @@ class SalesActivityRepository
         $newItem = [];
 
         $stringColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'string';
+            return $value == 'string' || $value == 'datetime';
+        }, ARRAY_FILTER_USE_BOTH);
+        $guidColumn = array_filter($this->column(), function($value, $key) {
+            return $value == 'guid';
         }, ARRAY_FILTER_USE_BOTH);
         $floatColumn = array_filter($this->column(), function($value, $key) {
             return $value == 'float';
@@ -113,20 +116,21 @@ class SalesActivityRepository
             $newItem[$key] = (bool)$item->{$key};
         }
 
-        $pipeline = !empty($item->pipeline) ? $item->pipeline : null;
+        foreach ($guidColumn as $key => $value) {
+            $prefix = substr($key, 0, 3);
+            $lookupProp = $prefix == 'Mdr' ? substr($key, 3, -2) : substr($key, 0, -2);
+            $newItem[$lookupProp] = !empty($item->{$lookupProp}) ? $item->{$lookupProp}->getDisplayValue() : "";
+        }
+
+        $pipeline = !empty($item->Pipeline) ? $item->Pipeline : null;
 
         $newItem['Id'] = $item->Id;
-        $newItem['CreatedOn'] = $item->CreatedOn; 
-        $newItem['ModifiedOn'] = $item->ModifiedOn;
-        $newItem['MdrLastActivityDate'] = $item->MdrLastActivityDate;
-        $newItem['update_aktifitas'] = !empty($item->update_aktifitas) ? $item->update_aktifitas->getDisplayValue() : "";
-        $newItem['pipeline'] = !empty($pipeline) ? $pipeline->getDisplayValue() : "";
-        $newItem['alamat'] = !empty($pipeline) ? $pipeline->MdrAlamat : "";
-        $newItem['kode_pos'] = !empty($pipeline) ? (!empty($pipeline->kode_pos) ? $pipeline->kode_pos->getDisplayValue() : "") : "";
-        $newItem['no_telp'] = !empty($pipeline) ? $pipeline->MdrNoTelp : "";
-        $newItem['email'] = !empty($pipeline) ? $pipeline->MdrEmail : "";
-        $newItem['gwp'] = !empty($pipeline) ? 'IDR '.number_format((float)$pipeline->MdrGWP, 2) : "IDR 0.00";
-        $newItem['created_by'] = !empty($pipeline) ? (!empty($pipeline->created_by) ? $pipeline->created_by->getDisplayValue() : "") : "";
+        $newItem['Alamat'] = !empty($pipeline) ? $pipeline->MdrAlamat : "";
+        $newItem['KodePos'] = !empty($pipeline) ? (!empty($pipeline->KodePosLookup) ? $pipeline->KodePosLookup->getDisplayValue() : "") : "";
+        $newItem['NoTelp'] = !empty($pipeline) ? $pipeline->MdrNoTelp : "";
+        $newItem['Email'] = !empty($pipeline) ? $pipeline->MdrEmail : "";
+        $newItem['GWP'] = !empty($pipeline) ? 'IDR '.number_format((float)$pipeline->MdrGWP, 2) : "IDR 0.00";
+        $newItem['CreatedBy'] = !empty($pipeline) ? (!empty($pipeline->CreatedBy) ? $pipeline->CreatedBy->getDisplayValue() : "") : "";
         $newItem['image'] = [
             'id' => 0,
             'full' => [
@@ -142,10 +146,10 @@ class SalesActivityRepository
 
     private function select()
     {
-        return SalesActivity::with('pipeline')
-            ->with('pipeline.kode_pos')
-            ->with('pipeline.created_by')
-            ->with('update_aktifitas')
+        return SalesActivity::with('Pipeline')
+            ->with('Pipeline.KodePosLookup')
+            ->with('Pipeline.CreatedBy')
+            ->with('UpdateAktivitas')
             ->addSelect(array_map(function($item) {
                 return 'MdrSalesActivity.'.$item;
             }, array_keys($this->column())));

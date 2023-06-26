@@ -147,7 +147,10 @@ class PipelineRepository
         $newItem = [];
 
         $stringColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'string';
+            return $value == 'string' || $value == 'datetime';
+        }, ARRAY_FILTER_USE_BOTH);
+        $guidColumn = array_filter($this->column(), function($value, $key) {
+            return $value == 'guid';
         }, ARRAY_FILTER_USE_BOTH);
         $floatColumn = array_filter($this->column(), function($value, $key) {
             return $value == 'float';
@@ -168,7 +171,14 @@ class PipelineRepository
             $newItem[$key] = (bool)$item->{$key};
         }
 
+        foreach ($guidColumn as $key => $value) {
+            $prefix = substr($key, 0, 3);
+            $lookupProp = $prefix == 'Mdr' ? substr($key, 3, -2) : substr($key, 0, -2);
+            $newItem[$lookupProp] = !empty($item->{$lookupProp}) ? $item->{$lookupProp}->getDisplayValue() : "";
+        }
+
         $newItem['Id'] = $item->Id;
+<<<<<<< Updated upstream
         $newItem['CreatedOn'] = $item->CreatedOn; 
         $newItem['ModifiedOn'] = $item->ModifiedOn;
         $newItem['created_by'] = $item->created_by->getDisplayValue();
@@ -198,6 +208,8 @@ class PipelineRepository
         $newItem['perkiraan_closing'] = !empty($item->perkiraan_closing) ? $item->perkiraan_closing->getDisplayValue() : "";
         $newItem['quotation'] = !empty($item->quotation) ? $item->quotation->getDisplayValue() : "";
         $newItem['update_aktifitas'] = !empty($item->update_aktifitas) ? $item->update_aktifitas->getDisplayValue() : "";
+=======
+>>>>>>> Stashed changes
         $newItem['image'] = [
             'id' => 0,
             'full' => [
@@ -213,6 +225,7 @@ class PipelineRepository
     
     private function select() 
     {
+<<<<<<< Updated upstream
         return Pipeline::with('kanal')
             ->with('agent')
             ->with('kepala_unit')
@@ -239,6 +252,34 @@ class PipelineRepository
             ->with('quotation')
             ->with('update_aktifitas')
             ->with('created_by')
+=======
+        return Pipeline::with('KanalDistribusi')
+            ->with('InsuranceAgent')
+            ->with('KaUnit')
+            ->with('KepalaKPM')
+            ->with('Produk')
+            ->with('Status')
+            ->with('PolisStatus')
+            ->with('KategoriAsuransiEksisting')
+            ->with('AsuransiEksisting')
+            ->with('BrokerName')
+            ->with('CoInsurance')
+            ->with('Syariah')
+            ->with('KepemilikanBU')
+            ->with('Provinsi')
+            ->with('Kabupaten')
+            ->with('Kecamatan')
+            ->with('Kelurahan')
+            ->with('KodePosLookup')
+            ->with('WilayahBadanUsaha')
+            ->with('SektorIndustri')
+            ->with('SinergiBankMandiri')
+            ->with('TerminBayar')
+            ->with('PerkiraanClosing')
+            ->with('Quotation')
+            ->with('UpdateAktifitas')
+            ->with('CreatedBy')
+>>>>>>> Stashed changes
             ->addSelect(array_map(function($item) {
                 return 'MdrPipeline.'.$item;
             }, array_keys($this->column())));
@@ -272,6 +313,7 @@ class PipelineRepository
             'MdrPerkiraanClosingId' => 'guid',
             'MdrQuotationId' => 'guid',
             'MdrUpdateAktifitasId' => 'guid',
+            'CreatedById' => 'guid',
             'Id' => 'guid|primary',
             'CreatedOn' => 'datetime',
             'ModifiedOn' => 'datetime', 

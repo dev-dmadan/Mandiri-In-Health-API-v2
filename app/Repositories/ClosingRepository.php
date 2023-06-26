@@ -92,7 +92,10 @@ class ClosingRepository
         $newItem = [];
 
         $stringColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'string';
+            return $value == 'string' || $value == 'datetime';
+        }, ARRAY_FILTER_USE_BOTH);
+        $guidColumn = array_filter($this->column(), function($value, $key) {
+            return $value == 'guid';
         }, ARRAY_FILTER_USE_BOTH);
         $booleanColumn = array_filter($this->column(), function($value, $key) {
             return $value == 'boolean';
@@ -106,21 +109,21 @@ class ClosingRepository
             $newItem[$key] = (bool)$item->{$key};
         }
 
-        $pipeline = !empty($item->pipeline) ? $item->pipeline : null;
-        $quotation = !empty($item->quotation) ? $item->quotation : null;
+        foreach ($guidColumn as $key => $value) {
+            $prefix = substr($key, 0, 3);
+            $lookupProp = $prefix == 'Mdr' ? substr($key, 3, -2) : substr($key, 0, -2);
+            $newItem[$lookupProp] = !empty($item->{$lookupProp}) ? $item->{$lookupProp}->getDisplayValue() : "";
+        }
+
+        $pipeline = !empty($item->Pipeline) ? $item->Pipeline : null;
+        $quotation = !empty($item->Quotation) ? $item->Quotation : null;
 
         $newItem['Id'] = $item->Id;
-        $newItem['CreatedOn'] = $item->CreatedOn; 
-        $newItem['ModifiedOn'] = $item->ModifiedOn;
-        $newItem['pipeline'] = !empty($pipeline) ? $pipeline->getDisplayValue() : "";
-        $newItem['quotation'] = !empty($quotation) ? $quotation->getDisplayValue() : "";
-        $newItem['status'] = !empty($item->status) ? $item->status->getDisplayValue() : "";
-        $newItem['produk'] = !empty($item->produk) ? $item->produk->getDisplayValue() : "";
-        $newItem['alamat'] = !empty($pipeline) ? $pipeline->MdrAlamat : "";
-        $newItem['kode_pos'] = !empty($pipeline) ? (!empty($pipeline->kode_pos) ? $pipeline->kode_pos->getDisplayValue() : "") : "";
-        $newItem['created_by'] = !empty($pipeline) ? (!empty($pipeline->created_by) ? $pipeline->created_by->getDisplayValue() : "") : "";
-        $newItem['no_telp'] = !empty($quotation) ? $quotation->MdrPhoneNumber : "";
-        $newItem['email'] = !empty($quotation) ? $quotation->MdrEmail : "";
+        $newItem['Alamat'] = !empty($pipeline) ? $pipeline->MdrAlamat : "";
+        $newItem['KodePos'] = !empty($pipeline) ? (!empty($pipeline->KodePosLookup) ? $pipeline->KodePosLookup->getDisplayValue() : "") : "";
+        $newItem['CreatedBy'] = !empty($pipeline) ? (!empty($pipeline->CreatedBy) ? $pipeline->CreatedBy->getDisplayValue() : "") : "";
+        $newItem['PhoneNumber'] = !empty($quotation) ? $quotation->MdrPhoneNumber : "";
+        $newItem['Email'] = !empty($quotation) ? $quotation->MdrEmail : "";
         $newItem['image'] = [
             'id' => 0,
             'full' => [
@@ -136,12 +139,12 @@ class ClosingRepository
 
     private function select()
     {
-        return Closing::with('pipeline')
-            ->with('pipeline.kode_pos')
-            ->with('pipeline.created_by')
-            ->with('quotation')
-            ->with('status')
-            ->with('produk')
+        return Closing::with('Pipeline')
+            ->with('Pipeline.KodePosLookup')
+            ->with('Pipeline.CreatedBy')
+            ->with('Quotation')
+            ->with('ClosingStatus')
+            ->with('Product')
             ->addSelect(array_map(function($item) {
                 return 'MdrClosing.'.$item;
             }, array_keys($this->column())));

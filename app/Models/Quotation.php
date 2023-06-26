@@ -7,52 +7,52 @@ class Quotation extends CreatioModel
     protected $table = 'MdrQuotation';
     public $displayValue = 'MdrName';
 
-    public function kanal()
+    public function KanalDistribusi()
     {
         return $this->belongsTo(Kanal::class, 'MdrKanalDistribusiId', 'Id');
     }
 
-    public function badan_usaha()
+    public function BUName()
     {
         return $this->belongsTo(Pipeline::class, 'MdrBUNameId', 'Id');
     }
 
-    public function status()
+    public function QuotationStatus()
     {
         return $this->belongsTo(StatusQuotation::class, 'MdrQuotationStatusId', 'Id');
     }
 
-    public function agent()
+    public function AgentName()
     {
         return $this->belongsTo(Agent::class, 'MdrAgentNameId', 'Id');
     }
 
-    public function kepala_unit()
+    public function KAUNIT()
     {
         return $this->belongsTo(KepalaUnit::class, 'MdrKAUNITId', 'Id');
     }
 
-    public function kepala_kanal()
+    public function KepalaKanal()
     {
         return $this->belongsTo(KepalaKanal::class, 'MdrKepalaKanalId', 'Id');
     }
 
-    public function produk()
+    public function Product()
     {
         return $this->belongsTo(Produk::class, 'MdrProductId', 'Id');
     }
 
-    public function skema_produk()
+    public function SkemaProduct()
     {
         return $this->belongsTo(SkemaProduk::class, 'MdrSkemaProductId', 'Id');
     }
 
-    public function tujuan_klaim_reimburse_pengajuan() 
+    public function TujuanKlaimReimbursePengajuan() 
     {
         return $this->belongsTo(TujuanKlaimReimburse::class, 'MdrTujuanKlaimReimbursePengajuanId', 'Id');
     }
 
-    public function tujuan_klaim_reimburse_disetujui() 
+    public function TujuanKlaimReimburseDiSetujui() 
     {
         return $this->belongsTo(TujuanKlaimReimburse::class, 'MdrTujuanKlaimReimburseDiSetujuiId', 'Id');
     }
