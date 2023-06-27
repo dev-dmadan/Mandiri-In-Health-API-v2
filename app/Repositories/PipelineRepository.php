@@ -178,38 +178,6 @@ class PipelineRepository
         }
 
         $newItem['Id'] = $item->Id;
-<<<<<<< Updated upstream
-        $newItem['CreatedOn'] = $item->CreatedOn; 
-        $newItem['ModifiedOn'] = $item->ModifiedOn;
-        $newItem['created_by'] = $item->created_by->getDisplayValue();
-        $newItem['MdrTanggalAktifitasBerkahir'] = $item->MdrTanggalAktifitasBerkahir;
-        $newItem['kanal'] = !empty($item->kanal) ? $item->kanal->getDisplayValue() : "";
-        $newItem['agent'] = !empty($item->agent) ? $item->agent->getDisplayValue() : "";
-        $newItem['kepala_unit'] = !empty($item->kepala_unit) ? $item->kepala_unit->getDisplayValue() : "";
-        $newItem['kepala_kanal'] = !empty($item->kepala_kanal) ? $item->kepala_kanal->getDisplayValue() : "";
-        $newItem['produk'] = !empty($item->produk) ? $item->produk->getDisplayValue() : "";
-        $newItem['status'] = !empty($item->status) ? $item->status->getDisplayValue() : "";
-        $newItem['status_polis'] = !empty($item->status_polis) ? $item->status_polis->getDisplayValue() : "";
-        $newItem['kategori_asuransi_eksisting'] = !empty($item->kategori_asuransi_eksisting) ? $item->kategori_asuransi_eksisting->getDisplayValue() : "";
-        $newItem['asuransi_eksisting'] = !empty($item->asuransi_eksisting) ? $item->asuransi_eksisting->getDisplayValue() : "";
-        $newItem['broker'] = !empty($item->broker) ? $item->broker->getDisplayValue() : "";
-        $newItem['co_insurance'] = !empty($item->co_insurance) ? $item->co_insurance->getDisplayValue() : "";
-        $newItem['syariah'] = !empty($item->syariah) ? $item->syariah->getDisplayValue() : "";
-        $newItem['kepemilikan_bu'] = !empty($item->kepemilikan_bu) ? $item->kepemilikan_bu->getDisplayValue() : "";
-        $newItem['provinsi'] = !empty($item->provinsi) ? $item->provinsi->getDisplayValue() : "";
-        $newItem['kabupaten'] = !empty($item->kabupaten) ? $item->kabupaten->getDisplayValue() : "";
-        $newItem['kecamatan'] = !empty($item->kecamatan) ? $item->kecamatan->getDisplayValue() : "";
-        $newItem['kelurahan'] = !empty($item->kelurahan) ? $item->kelurahan->getDisplayValue() : "";
-        $newItem['kode_pos'] = !empty($item->kode_pos) ? $item->kode_pos->getDisplayValue() : "";
-        $newItem['wilayah_badan_usaha'] = !empty($item->wilayah_badan_usaha) ? $item->wilayah_badan_usaha->getDisplayValue() : "";
-        $newItem['sektor_industri'] = !empty($item->sektor_industri) ? $item->sektor_industri->getDisplayValue() : "";
-        $newItem['sinergi_bank_mandiri'] = !empty($item->sinergi_bank_mandiri) ? $item->sinergi_bank_mandiri->getDisplayValue() : "";
-        $newItem['termin_bayar'] = !empty($item->termin_bayar) ? $item->termin_bayar->getDisplayValue() : "";
-        $newItem['perkiraan_closing'] = !empty($item->perkiraan_closing) ? $item->perkiraan_closing->getDisplayValue() : "";
-        $newItem['quotation'] = !empty($item->quotation) ? $item->quotation->getDisplayValue() : "";
-        $newItem['update_aktifitas'] = !empty($item->update_aktifitas) ? $item->update_aktifitas->getDisplayValue() : "";
-=======
->>>>>>> Stashed changes
         $newItem['image'] = [
             'id' => 0,
             'full' => [
@@ -225,34 +193,6 @@ class PipelineRepository
     
     private function select() 
     {
-<<<<<<< Updated upstream
-        return Pipeline::with('kanal')
-            ->with('agent')
-            ->with('kepala_unit')
-            ->with('kepala_kanal')
-            ->with('produk')
-            ->with('status')
-            ->with('status_polis')
-            ->with('kategori_asuransi_eksisting')
-            ->with('asuransi_eksisting')
-            ->with('broker')
-            ->with('co_insurance')
-            ->with('syariah')
-            ->with('kepemilikan_bu')
-            ->with('provinsi')
-            ->with('kabupaten')
-            ->with('kecamatan')
-            ->with('kelurahan')
-            ->with('kode_pos')
-            ->with('wilayah_badan_usaha')
-            ->with('sektor_industri')
-            ->with('sinergi_bank_mandiri')
-            ->with('termin_bayar')
-            ->with('perkiraan_closing')
-            ->with('quotation')
-            ->with('update_aktifitas')
-            ->with('created_by')
-=======
         return Pipeline::with('KanalDistribusi')
             ->with('InsuranceAgent')
             ->with('KaUnit')
@@ -279,7 +219,6 @@ class PipelineRepository
             ->with('Quotation')
             ->with('UpdateAktifitas')
             ->with('CreatedBy')
->>>>>>> Stashed changes
             ->addSelect(array_map(function($item) {
                 return 'MdrPipeline.'.$item;
             }, array_keys($this->column())));
