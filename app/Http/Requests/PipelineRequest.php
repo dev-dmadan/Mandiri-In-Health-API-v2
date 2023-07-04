@@ -3,11 +3,12 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Contracts\Validation\Validator;
+use App\Traits\RequestTrait;
 
 class PipelineRequest extends FormRequest
 {
+    use RequestTrait;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -22,6 +23,61 @@ class PipelineRequest extends FormRequest
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
      */
     public function rules(): array
+    {
+        if($this->isMethod('POST')) {
+            return $this->storeRules();
+        }
+
+        if($this->isMethod('PUT')) {
+            return $this->updateRules();
+        }
+
+        return [];
+    }
+
+    public function attributes()
+    {
+        return [
+            'MdrKanalDistribusiId' => 'KANAL DISTRIBUSI',
+            'MdrInsuranceAgentId' => 'AGENT',
+            'MdrEmailAgent' => 'EMAIL AGENT',
+            'MdrKaUnitId' => 'KA. UNIT',
+            'MdrKepalaKPMId' => 'KA. KPM',
+            'MdrKategoriAsuransiEksistingId' => 'KATEGORI ASURANSI EKSISTING',
+            'MdrAsuransiEksistingId' => 'ASURANSI EKSISTING',
+            'MdrBrokerNameId' => 'BROKER NAME',
+            'MdrCoInsuranceId' => 'CO INSURANCE',
+            'MdrSyariahId' => 'SYARIAH',
+            'MdrName' => 'NAMA BU',
+            'MdrKepemilikanBUId' => 'KEPEMILIKAN BU',
+            'MdrNamaDireksi' => 'NAMA DIREKSI',
+            'MdrTanggalLahirDireksi' => 'TANGGAL LAHIR DIREKSI',
+            'MdrPICName' => 'PIC NAME',
+            'MdrNoTelp' => 'NO. TELP',
+            'MdrEmail' => 'EMAIL',
+            'MdrKodePosLookupId' => 'KODE POS',
+            'MdrKelurahanId' => 'KELURAHAN',
+            'MdrKecamatanId' => 'KECAMATAN',
+            'MdrKabupatenId' => 'KABUPATEN',
+            'MdrProvinsiId' => 'PROVINSI',
+            'MdrAlamat' => 'ALAMAT',
+            'MdrWilayahBadanUsahaId' => 'WILAYAH BADAN USAHA',
+            'MdrProvinsiWilayahBU' => 'PROVINSI WILAYAH BU',
+            'MdrSektorIndustriId' => 'SEKTOR INDUSTRI',
+            'MdrSinergiBankMandiriId' => 'SINERGI BANK MANDIRI',
+            'MdrKeteranganSinergiBankMandiri' => 'KETERANGAN SINERGI BANK MANDIRI',
+            'MdrProdukId' => 'PRODUK',
+            'MdrPolisStatusId' => 'POLIS STATUS',
+            'MdrJumlahPeserta' => 'JUMLAH PESERTA',
+            'MdrTerminBayarId' => 'TERMIN BAYAR',
+            'MdrPremiDisetahunkan' => 'PREMI DISETAHUNKAN',
+            'MdrPerkiraanClosingId' => 'PERKIRAAN CLOSING',
+            'MdrKomitmentAgen' => 'KOMITMEN',
+            'MdrKomitmenKaUnit' => 'KOMITMEN KA. UNIT',
+        ];
+    }
+
+    private function storeRules()
     {
         return [
 
@@ -69,56 +125,8 @@ class PipelineRequest extends FormRequest
         ];
     }
 
-    public function attributes()
+    private function updateRules()
     {
-        return [
-            'MdrKanalDistribusiId' => 'KANAL DISTRIBUSI',
-            'MdrInsuranceAgentId' => 'AGENT',
-            'MdrEmailAgent' => 'EMAIL AGENT',
-            'MdrKaUnitId' => 'KA. UNIT',
-            'MdrKepalaKPMId' => 'KA. KPM',
-            'MdrKategoriAsuransiEksistingId' => 'KATEGORI ASURANSI EKSISTING',
-            'MdrAsuransiEksistingId' => 'ASURANSI EKSISTING',
-            'MdrBrokerNameId' => 'BROKER NAME',
-            'MdrCoInsuranceId' => 'CO INSURANCE',
-            'MdrSyariahId' => 'SYARIAH',
-            'MdrName' => 'NAMA BU',
-            'MdrKepemilikanBUId' => 'KEPEMILIKAN BU',
-            'MdrNamaDireksi' => 'NAMA DIREKSI',
-            'MdrTanggalLahirDireksi' => 'TANGGAL LAHIR DIREKSI',
-            'MdrPICName' => 'PIC NAME',
-            'MdrNoTelp' => 'NO. TELP',
-            'MdrEmail' => 'EMAIL',
-            'MdrKodePosLookupId' => 'KODE POS',
-            'MdrKelurahanId' => 'KELURAHAN',
-            'MdrKecamatanId' => 'KECAMATAN',
-            'MdrKabupatenId' => 'KABUPATEN',
-            'MdrProvinsiId' => 'PROVINSI',
-            'MdrAlamat' => 'ALAMAT',
-            'MdrWilayahBadanUsahaId' => 'WILAYAH BADAN USAHA',
-            'MdrProvinsiWilayahBU' => 'PROVINSI WILAYAH BU',
-            'MdrSektorIndustriId' => 'SEKTOR INDUSTRI',
-            'MdrSinergiBankMandiriId' => 'SINERGI BANK MANDIRI',
-            'MdrKeteranganSinergiBankMandiri' => 'KETERANGAN SINERGI BANK MANDIRI',
-            'MdrProdukId' => 'PRODUK',
-            'MdrPolisStatusId' => 'POLIS STATUS',
-            'MdrJumlahPeserta' => 'JUMLAH PESERTA',
-            'MdrTerminBayarId' => 'TERMIN BAYAR',
-            'MdrPremiDisetahunkan' => 'PREMI DISETAHUNKAN',
-            'MdrPerkiraanClosingId' => 'PERKIRAAN CLOSING',
-            'MdrKomitmentAgen' => 'KOMITMEN',
-            'MdrKomitmenKaUnit' => 'KOMITMEN KA. UNIT',
-        ];
-    }
-
-    protected function failedValidation(Validator $validator)
-    {
-        $response = [
-            'success' => false,
-            'message' => 'Harap cek kembali form',
-            'error' => $validator->errors(),
-        ];
-        
-        throw new HttpResponseException(response()->json($response, 422));
+        return [];
     }
 }

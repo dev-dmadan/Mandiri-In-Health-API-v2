@@ -126,8 +126,7 @@ class PipelineController extends Controller
         $password = Crypt::decryptString($request->input('encrypt_password'));
         $creatio = new CreatioService($request->user()->username, $password);
 
-        $data = $request->except(['encrypt_password', 'SecretKey']);
-        return $creatio->rest('APIRepositoryWebService', 'DeletePipeline')->delete($id, $data);
+        return $creatio->rest('APIRepositoryWebService', 'DeletePipeline')->post(['Id' => $id]);
     }
 
     private function emptyPipeline()

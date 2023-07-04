@@ -58,6 +58,14 @@ class SalesActivityController extends Controller
         return $creatio->oData4('MdrSalesActivity')->patch($id, $data);
     }
 
+    public function destroy(Request $request, $id)
+    {
+        $password = Crypt::decryptString($request->input('encrypt_password'));
+        $creatio = new CreatioService($request->user()->username, $password);
+
+        return $creatio->rest('APIRepositoryWebService', 'DeleteSalesActivity')->post(['Id' => $id]);
+    }
+
     private function emptySalesActivity()
     {
         return SalesActivity::whereNull('Id');

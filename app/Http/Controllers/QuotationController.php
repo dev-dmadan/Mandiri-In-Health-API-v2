@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\QuotationRequest;
 use App\Models\Quotation;
 use App\Repositories\QuotationRepository;
+use App\Services\CreatioService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 
 class QuotationController extends Controller
 {
@@ -15,9 +18,6 @@ class QuotationController extends Controller
         $this->quotationRepo = $quotationRepo;
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $contactId = $request->query('contact');
@@ -74,6 +74,24 @@ class QuotationController extends Controller
     public function show($id)
     {
         return response()->json($this->quotationRepo->get($id));
+    }
+
+    public function update(QuotationRequest $request, $id)
+    {
+        $password = Crypt::decryptString($request->input('encrypt_password'));
+        $creatio = new CreatioService($request->user()->username, $password);
+
+        $data = $request->except(['encrypt_password', 'SecretKey', '_method']);
+        return $creatio->oData4('MdrQuotation')->patch($id, $data);
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $password = Crypt::decryptString($request->input('encrypt_password'));
+        $creatio = new CreatioService($request->user()->username, $password);
+
+        $data = $request->except(['encrypt_password', 'SecretKey']);
+        return $creatio->rest('APIRepositoryWebService', 'DeleteQuotation')->delete($id, $data);
     }
 
     private function emptyQuotation()

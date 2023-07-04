@@ -42,7 +42,7 @@ class AuthController extends Controller
             'message' => 'Login successfully',
             'user' => [
                 'username' => $user->username,
-                '_password' => Crypt::encryptString($request->password),
+                'encrypt_password' => Crypt::encryptString($request->password),
                 'name' => $contact->contact_name,
                 'contact_id' => $contact->contact_id,
                 'kanal_id' => $contact->kanal_id,

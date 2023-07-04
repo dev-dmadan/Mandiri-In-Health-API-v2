@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Traits\RequestTrait;
 
-class SalesActivityRequest extends FormRequest
+class QuotationRequest extends FormRequest
 {
     use RequestTrait;
 
@@ -38,30 +38,21 @@ class SalesActivityRequest extends FormRequest
     public function attributes()
     {
         return [
-            "MdrUpdateAktivitasId" => "UPDATE AKTIVITAS",
-            "MdrPipelineId" => "PIPELINE",
-            "MdrStatusAktivitas" => "STATUS AKTIVITAS",
-            "MdrPerkiranClosing" => "PERKIRAAN CLOSING",
-            "MdrCommitment" => "KOMITMEN",
-            "MdrKeteranganProgres" => "KETERANGAN PROGRES"
+
         ];
     }
 
     private function storeRules()
     {
         return [
-            "MdrUpdateAktivitasId" => 'required|uuid',
-            "MdrCommitment" => 'nullable|boolean',
-            "MdrKeteranganProgres" => 'required|string'
+
         ];
     }
 
     private function updateRules()
     {
         return [
-            "MdrUpdateAktivitasId" => 'required|uuid',
-            "MdrCommitment" => 'nullable|boolean',
-            "MdrKeteranganProgres" => 'required|string'
+            
         ];
     }
 }

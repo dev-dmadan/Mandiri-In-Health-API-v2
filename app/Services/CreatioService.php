@@ -94,29 +94,33 @@ class CreatioService
 
     public function get($param)
     {
-        while (true) {
-            $response = $this->defaultRequest()
-                ->get($this->getUri(), $param);
-
+        $i = 0;
+        while ($i < 2) {
+            $response = $this->defaultRequest('GET', $this->getUri(), $param);
             if($response->failed()) {
-                try {
-                    $response->throw();
-                } catch (Exception $e) {
-                    return $this->errorResponse($e->getMessage(), $response->status());
+                $handlingError = $this->handlingError($response);
+                if($handlingError != null) {
+                    return $handlingError;
                 }
+
+                $i++;
+                continue;
             }
 
             if(empty($response->json())) {
                 $tryLogin = $this->login();
                 if($tryLogin->success) {
+                    $i++;
                     continue;
                 }
 
                 return $this->errorResponse('Unauthenticated', 401);
             }
 
-            return $this->successResponse($response->body());
+            return $this->successResponse($response->json(), $response->status());
         }
+
+        return $this->errorResponse('Unauthenticated', 401);
     }
 
     public function post($data)
@@ -146,13 +150,15 @@ class CreatioService
 
             return $this->successResponse($response->json(), $response->status());
         }
+
+        return $this->errorResponse('Unauthenticated', 401);
     }
 
     public function put($id, $data)
     {
         $uri = $this->request->type == 'odata' ? $this->getUri().'('.$id.')' : $this->getUri().'/'.$id;
         $i = 0;
-        while ($i < 3) {
+        while ($i < 2) {
             $response = $this->defaultRequest('PUT', $uri, $this->request->param, $data);
             if($response->failed()) {
                 $handlingError = $this->handlingError($response);
@@ -174,15 +180,17 @@ class CreatioService
                 return $this->errorResponse('Unauthenticated', 401);
             }
 
-            return $this->successResponse($response->json());
+            return $this->successResponse($response->json(), $response->status());
         }
+
+        return $this->errorResponse('Unauthenticated', 401);
     }
 
     public function patch($id, $data)
     {
         $uri = $this->request->type == 'odata' ? $this->getUri().'('.$id.')' : $this->getUri().'/'.$id;
         $i = 0;
-        while ($i < 3) {
+        while ($i < 2) {
             $response = $this->defaultRequest('PATCH', $uri, $this->request->param, $data);
             if($response->failed()) {
                 $handlingError = $this->handlingError($response);
@@ -205,15 +213,17 @@ class CreatioService
                 return $this->errorResponse('Unauthenticated', 401);
             }
 
-            return $this->successResponse($response->json());
+            return $this->successResponse($response->json(), $response->status());
         }
+
+        return $this->errorResponse('Unauthenticated', 401);
     }
 
     public function delete($id, $data = null)
     {
         $uri = $this->request->type == 'odata' ? $this->getUri().'('.$id.')' : $this->getUri().'/'.$id;
         $i = 0;
-        while ($i < 3) {
+        while ($i < 2) {
             $response = $this->defaultRequest('DELETE', $uri, $this->request->param, $data);
             if($response->failed()) {
                 $handlingError = $this->handlingError($response);
@@ -236,8 +246,10 @@ class CreatioService
                 return $this->errorResponse('Unauthenticated', 401);
             }
 
-            return $this->successResponse($response->json());
+            return $this->successResponse($response->json(), $response->status());
         }
+
+        return $this->errorResponse('Unauthenticated', 401);
     }
 
     private function getUri()
@@ -313,7 +325,7 @@ class CreatioService
     {
         return response()->json([
             'success' => true,
-            'body' => $body
+            'response' => $body
         ], $statusCode);
     }
 

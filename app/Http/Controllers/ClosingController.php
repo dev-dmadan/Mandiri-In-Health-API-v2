@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ClosingRequest;
+use App\Models\Closing;
 use App\Repositories\ClosingRepository;
 use Illuminate\Http\Request;
+use App\Services\CreatioService;
+use Illuminate\Support\Facades\Crypt;
 
 class ClosingController extends Controller
 {
@@ -22,24 +26,48 @@ class ClosingController extends Controller
 
         $perPage = !empty($request->query('per_page')) ? $request->query('per_page') : 10;
         
-        $data = $this->closingRepo->getAll(
-            contactId: $contactId,
-            filter: [
-                'search' => $search,
-                'isKomit' => $isKomit,
-                // 'kanalId' => $kanalId,
-                // 'produkId' => $produkId,
-                // 'kepalaUnitId' => $kepalaUnitId,
-                // 'agentId' => $agentId,
-                // 'statusId' => $statusId,
-            ]
-        )
-        ->orderBy('CreatedOn', 'DESC')
-        ->paginate($perPage)
-        ->through(function ($item, $key) {                
-            return $this->closingRepo->mapResponse($item, $this->closingRepo->closingImage);
-        });
+        $data = empty($contactId) ? 
+            $this->emptyClosing()->paginate($perPage) : 
+            $this->closingRepo->getAll(
+                contactId: $contactId,
+                filter: [
+                    'search' => $search,
+                    'isKomit' => $isKomit,
+                    // 'kanalId' => $kanalId,
+                    // 'produkId' => $produkId,
+                    // 'kepalaUnitId' => $kepalaUnitId,
+                    // 'agentId' => $agentId,
+                    // 'statusId' => $statusId,
+                ]
+            )
+            ->orderBy('CreatedOn', 'DESC')
+            ->paginate($perPage)
+            ->through(function ($item, $key) {                
+                return $this->closingRepo->mapResponse($item, $this->closingRepo->closingImage);
+            });
 
         return response()->json($data);
+    }
+
+    public function update(ClosingRequest $request, $id)
+    {
+        $password = Crypt::decryptString($request->input('encrypt_password'));
+        $creatio = new CreatioService($request->user()->username, $password);
+
+        $data = $request->except(['encrypt_password', 'SecretKey', '_method']);
+        return $creatio->oData4('MdrClosing')->patch($id, $data);
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $password = Crypt::decryptString($request->input('encrypt_password'));
+        $creatio = new CreatioService($request->user()->username, $password);
+
+        return $creatio->rest('APIRepositoryWebService', 'DeleteClosing')->post(['Id' => $id]);
+    }
+
+    private function emptyClosing()
+    {
+        return Closing::whereNull('Id');
     }
 }

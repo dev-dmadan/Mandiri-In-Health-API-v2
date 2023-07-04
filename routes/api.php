@@ -6,7 +6,6 @@ use App\Http\Controllers\ClosingController;
 use App\Http\Controllers\PipelineController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\SalesActivityController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -46,11 +45,21 @@ Route::middleware('secret_key_is_valid')->group( function () {
             Route::get('/', [SalesActivityController::class, 'index']);
             Route::get('/{id}', [SalesActivityController::class, 'show'])
                 ->whereUuid('id');
+            // Route::post('/', [SalesActivityController::class, 'store']);
+            Route::put('/{id}', [SalesActivityController::class, 'update'])
+                ->whereUuid('id');
+            Route::delete('/{id}', [SalesActivityController::class, 'destroy'])
+                ->whereUuid('id');
         });
 
         Route::group(['prefix' => 'quotation'], function () {
             Route::get('/', [QuotationController::class, 'index']);
             Route::get('/{id}', [QuotationController::class, 'show'])
+                ->whereUuid('id');
+            // Route::post('/', [QuotationController::class, 'store']);
+            Route::put('/{id}', [QuotationController::class, 'update'])
+                ->whereUuid('id');
+            Route::delete('/{id}', [QuotationController::class, 'destroy'])
                 ->whereUuid('id');
         });
 
@@ -58,47 +67,11 @@ Route::middleware('secret_key_is_valid')->group( function () {
             Route::get('/', [ClosingController::class, 'index']);
             Route::get('/{id}', [ClosingController::class, 'show'])
                 ->whereUuid('id');
+            // Route::post('/', [ClosingController::class, 'store']);
+            Route::put('/{id}', [ClosingController::class, 'update'])
+                ->whereUuid('id');
+            Route::delete('/{id}', [ClosingController::class, 'destroy'])
+                ->whereUuid('id');
         });
     });
-});
-
-use Illuminate\Support\Facades\Hash;
-Route::get('/hashing-password', function(Request $request) {
-    echo Hash::make($request->password);
-});
-
-use Illuminate\Support\Str;
-Route::get('/get-uuid/{total?}', function ($total = 1) {
-    for ($i=0; $i < $total; $i++) { 
-        $id = (string) Str::orderedUuid();
-        echo $id. '<br>';
-    }
-})
-->whereNumber('total');
-
-
-use App\Services\CreatioService;
-Route::get('/test', function(Request $request) {
-    // $creatio = new CreatioService("Supervisor", "Supervisor");
-
-    // $id = 'b8f5cb73-0153-4123-b30d-03e3817f984f';
-    // $response = $creatio->oData4('MdrPipeline')
-    //     ->delete($id);
-
-    // $response = $creatio->oData4('EmployeeJob')
-    //     ->post([
-    //         'Name' => 'Test Laravel 8'
-    //     ]);
-
-    // return response()->json($response);
-    // return $response;
-
-    $string = "CreatedById";
-    // echo substr($string, 0, 3);
-    echo substr($string, 0, -2);
-});
-
-use Illuminate\Support\Facades\Crypt;
-Route::get('/test-password', function(Request $request) {
-    echo Crypt::encryptString($request->password);
 });
