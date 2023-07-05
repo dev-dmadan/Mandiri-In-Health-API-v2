@@ -49,6 +49,11 @@ class SalesActivityController extends Controller
         return response()->json($data);
     }
 
+    public function show($id)
+    {
+        return response()->json($this->salesAcitivityRepo->get($id));
+    }
+
     public function update(SalesActivityRequest $request, $id)
     {
         $password = Crypt::decryptString($request->input('encrypt_password'));
