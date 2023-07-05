@@ -19,6 +19,6 @@ use Illuminate\Support\Facades\Schema;
 
 Route::get('/', function() {
 
-    // dd(Contact::all());
+    dd(Contact::all());
     
 });
