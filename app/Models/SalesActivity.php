@@ -34,7 +34,7 @@ class SalesActivity extends CreatioModel
 
     public function AsuransiEkisting()
     {
-        return $this->belongsTo(KategoriAsuransiEksisting::class, 'MdrAsuransiEkistingId', 'Id');
+        return $this->belongsTo(KategoriAsuransiEksisting::class, 'MdrAsuransiEkisitingId', 'Id');
     }
 
     public function SinergiBankMandiri()
@@ -57,13 +57,11 @@ class SalesActivity extends CreatioModel
         return $this->belongsTo(Broker::class, 'MdrNamaBrokerId', 'Id');
     }
 
-    // buat model baru
     public function TipeProses()
     {
         return $this->belongsTo(TipeProses::class, 'MdrTipeProsesId', 'Id');
     }
 
-    // buat model baru
     public function ProdukAsuransiSebelumnya()
     {
         return $this->belongsTo(ProdukAsuransiSebelumnya::class, 'MdrProdukAsuransiSebelumnyaId', 'Id');
@@ -82,5 +80,40 @@ class SalesActivity extends CreatioModel
     public function AsuransiKompetitor()
     {
         return $this->belongsTo(AsuransiEksisting::class, 'MdrAsuransiKompetitorId', 'Id');
+    }
+
+    public function KategoriAsuransiPemenang()
+    {
+        return $this->belongsTo(KategoriAsuransiEksisting::class, 'MdrKategoriAsuransiPemenangId', 'Id');
+    }
+
+    public function AsuransiPemenang()
+    {
+        return $this->belongsTo(AsuransiEksisting::class, 'MdrAsuransiPemenangId', 'Id');
+    }
+
+    public function KategoriLoss1()
+    {
+        return $this->belongsTo(KategoriAlasanLoss1::class, 'MdrKategoriLoss1Id', 'Id');
+    }
+
+    public function KategoriLoss2()
+    {
+        return $this->belongsTo(KategoriAlasanLoss2::class, 'MdrKategoriLoss2Id', 'Id');
+    }
+
+    public function Produk()
+    {
+        return $this->belongsTo(Produk::class, 'MdrProdukId', 'Id');
+    }
+
+    public function KategoriLapse1()
+    {
+        return $this->belongsTo(KategoriAlasanLapse1::class, 'MdrKategoriLapse1Id', 'Id');
+    }
+
+    public function KategoriLapse2()
+    {
+        return $this->belongsTo(KategoriAlasanLapse2::class, 'MdrKategoriLapse2Id', 'Id');
     }
 }

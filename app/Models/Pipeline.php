@@ -131,4 +131,24 @@ class Pipeline extends CreatioModel
     {
         return $this->belongsTo(StatusPipeline::class, 'MdrUpdateAktifitasId', 'Id');
     }
+
+    public function PKSType()
+    {
+        return $this->belongsTo(PKSType::class, 'MdrPKSTypeId', 'Id');
+    }
+
+    public function PaymentMethod()
+    {
+        return $this->belongsTo(PaymentMethod::class, 'MdrPaymentMethodId', 'Id');
+    }
+
+    public function RiwayatSalesActivity()
+    {
+        return $this->hasMany(HistorySalesActivity::class, 'MdrPipelineId', 'Id')->orderBy('MdrSeqNo', 'desc');
+    }
+
+    public function NamaBURenewal()
+    {
+        return $this->belongsTo(BadanUsaha::class, 'MdrNamaBURenewalId', 'Id');
+    }
 }

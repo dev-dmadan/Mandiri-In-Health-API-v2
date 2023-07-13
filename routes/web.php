@@ -2,6 +2,7 @@
 
 use App\Models\Contact;
 use App\Models\TreeTest;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -17,8 +18,9 @@ use Illuminate\Support\Facades\Schema;
 |
 */
 
-Route::get('/', function() {
-
-   
-    
+Route::get('/', function () {
+    $contact = Contact::all()->first();
+    echo Carbon::parse($contact->CreatedOn, 'UTC')
+        ->setTimezone('Asia/Jakarta')
+        ->format('d-m-Y');
 });

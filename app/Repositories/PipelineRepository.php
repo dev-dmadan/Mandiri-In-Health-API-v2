@@ -6,10 +6,13 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Models\Contact;
 use App\Models\Pipeline;
+use App\Traits\MapResponseTrait;
 use Illuminate\Support\Arr;
 
 class PipelineRepository
 {
+    use MapResponseTrait;
+
     public $top3PipelineImage = "https://cdn-mdr.appbuilder.my.id/Top-3-Pipeline.jpg";
     public $pipelineImage = "https://cdn-mdr.appbuilder.my.id/Badan-Usaha.jpg";
 
@@ -79,10 +82,39 @@ class PipelineRepository
     public function get($id) 
     {
         return $this->select()
+            ->with(['RiwayatSalesActivity' => function($query) {
+                $query->with('UpdateAktivitas')
+                    ->select(
+                        'MdrPipelineId', 
+                        'MdrStatusAktifitas', 
+                        'MdrTanggalAktivitasTerkahir',
+                        'MdrUpdateAktivitasId',
+                        'MdrKomitmen',
+                        'MdrKeteranganProgres'
+                    );
+            }])
             ->where('Id', $id)
             ->get()
             ->map(function($item) {
-                return $this->mapResponse($item, $this->pipelineImage);
+                $mapResponse = $this->mapResponse($item, $this->pipelineImage);
+                foreach($this->getFloatColumn() as $key => $value) {
+                    if(str_contains($value, 'float|money-short')) {
+                        $mapResponse->{$key} = $this->getFloatColumnValue($item->{$key}, 'money');
+                    }
+                }
+                
+                $mapResponse->RiwayatSalesActivity = [];
+                foreach ($item->RiwayatSalesActivity as $key => $value) {
+                    $mapResponse->RiwayatSalesActivity[$key] = (object)[
+                        'MdrStatusAktifitas' => $this->getStringColumnValue($value->MdrStatusAktifitas, 'uppercase'),
+                        'MdrTanggalAktivitasTerkahir' => $this->getDateTimeColumnValue($value->MdrTanggalAktivitasTerkahir),
+                        'UpdateAktivitas' => $this->getGuidColumnValue($value, 'UpdateAktivitas', 'uppercase'),
+                        'MdrKomitmen' => (bool)$value->MdrKomitmen,
+                        'MdrKeteranganProgres' => $this->getStringColumnValue($value->MdrKeteranganProgres, 'uppercase'),
+                    ];
+                }
+
+                return $mapResponse;
             })
             ->first();
     }
@@ -144,40 +176,7 @@ class PipelineRepository
 
     public function mapResponse($item, $image) 
     {
-        $newItem = [];
-
-        $stringColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'string' || $value == 'datetime';
-        }, ARRAY_FILTER_USE_BOTH);
-        $guidColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'guid';
-        }, ARRAY_FILTER_USE_BOTH);
-        $floatColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'float';
-        }, ARRAY_FILTER_USE_BOTH);
-        $booleanColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'boolean';
-        }, ARRAY_FILTER_USE_BOTH);
-
-        foreach ($stringColumn as $key => $value) {
-            $newItem[$key] = $item->{$key};
-        }
-
-        foreach ($floatColumn as $key => $value) {
-            $newItem[$key] = 'IDR '.number_format((float)$item->{$key}, 2);
-        }
-
-        foreach ($booleanColumn as $key => $value) {
-            $newItem[$key] = (bool)$item->{$key};
-        }
-
-        foreach ($guidColumn as $key => $value) {
-            $prefix = substr($key, 0, 3);
-            $lookupProp = $prefix == 'Mdr' ? substr($key, 3, -2) : substr($key, 0, -2);
-            $newItem[$lookupProp] = !empty($item->{$lookupProp}) ? $item->{$lookupProp}->getDisplayValue() : "";
-        }
-
-        $newItem['Id'] = $item->Id;
+        $newItem = $this->bindingColumnWithValue($item);
         $newItem['image'] = [
             'id' => 0,
             'full' => [
@@ -218,6 +217,9 @@ class PipelineRepository
             ->with('PerkiraanClosing')
             ->with('Quotation')
             ->with('UpdateAktifitas')
+            ->with('PKSType')
+            ->with('PaymentMethod')
+            ->with('NamaBURenewal')
             ->with('CreatedBy')
             ->addSelect(array_map(function($item) {
                 return 'MdrPipeline.'.$item;
@@ -227,54 +229,64 @@ class PipelineRepository
     private function column()
     {
         return [
-            'MdrKanalDistribusiId' => 'guid',
-            'MdrInsuranceAgentId' => 'guid',
-            'MdrKaUnitId' => 'guid',
-            'MdrKaKPMId' => 'guid',
-            'MdrKategoriAsuransiEksistingId' => 'guid',
-            'MdrAsuransiEksistingId' => 'guid',
-            'MdrBrokerNameId' => 'guid',
-            'MdrCoInsuranceId' => 'guid',
-            'MdrSyariahId' => 'guid',
-            'MdrKepemilikanBUId' => 'guid',
-            'MdrKodePosLookupId' => 'guid',
-            'MdrKelurahanId' => 'guid',
-            'MdrKecamatanId' => 'guid',
-            'MdrKabupatenId' => 'guid',
-            'MdrProvinsiId' => 'guid',
-            'MdrWilayahBadanUsahaId' => 'guid',
-            'MdrSektorIndustriId' => 'guid',
-            'MdrSinergiBankMandiriId' => 'guid',
-            'MdrProdukId' => 'guid',
-            'MdrStatusId' => 'guid',
-            'MdrPolisStatusId' => 'guid',
-            'MdrTerminBayarId' => 'guid',
-            'MdrPerkiraanClosingId' => 'guid',
-            'MdrQuotationId' => 'guid',
-            'MdrUpdateAktifitasId' => 'guid',
-            'CreatedById' => 'guid',
+            'MdrKanalDistribusiId' => 'guid|uppercase',
+            'MdrInsuranceAgentId' => 'guid|uppercase',
+            'MdrKaUnitId' => 'guid|uppercase',
+            'MdrKaKPMId' => 'guid|uppercase',
+            'MdrKategoriAsuransiEksistingId' => 'guid|uppercase',
+            'MdrAsuransiEksistingId' => 'guid|uppercase',
+            'MdrBrokerNameId' => 'guid|uppercase',
+            'MdrCoInsuranceId' => 'guid|uppercase',
+            'MdrSyariahId' => 'guid|uppercase',
+            'MdrKepemilikanBUId' => 'guid|uppercase',
+            'MdrKodePosLookupId' => 'guid|uppercase',
+            'MdrKelurahanId' => 'guid|uppercase',
+            'MdrKecamatanId' => 'guid|uppercase',
+            'MdrKabupatenId' => 'guid|uppercase',
+            'MdrProvinsiId' => 'guid|uppercase',
+            'MdrWilayahBadanUsahaId' => 'guid|uppercase',
+            'MdrSektorIndustriId' => 'guid|uppercase',
+            'MdrSinergiBankMandiriId' => 'guid|uppercase',
+            'MdrProdukId' => 'guid|uppercase',
+            'MdrStatusId' => 'guid|uppercase',
+            'MdrPolisStatusId' => 'guid|uppercase',
+            'MdrTerminBayarId' => 'guid|uppercase',
+            'MdrPerkiraanClosingId' => 'guid|uppercase',
+            'MdrQuotationId' => 'guid|uppercase',
+            'MdrUpdateAktifitasId' => 'guid|uppercase',
+            'MdrPKSTypeId' => 'guid|uppercase',
+            'MdrPaymentMethodId' => 'guid|uppercase',
+            'MdrNamaBURenewalId' => 'guid|uppercase',
+            'CreatedById' => 'guid|uppercase',
             'Id' => 'guid|primary',
             'CreatedOn' => 'datetime',
             'ModifiedOn' => 'datetime', 
             'MdrEmailAgent' => 'string',
-            'MdrName' => 'string',
-            'MdrNamaDireksi' => 'string',
-            'MdrPICName' => 'string',
-            'MdrNoTelp' => 'string',
+            'MdrName' => 'string|uppercase',
+            'MdrNamaDireksi' => 'string|uppercase',
+            'MdrPICName' => 'string|uppercase',
+            'MdrNoTelp' => 'string|uppercase',
             'MdrEmail' => 'string',
-            'MdrAlamat' => 'string',
-            'MdrProvinsiWilayahBU' => 'string',
-            'MdrKodeBooking' => 'string',
-            'MdrJumlahPeserta' => 'string',
-            'MdrPremiDisetahunkan' => 'float',
-            'MdrPremiPerTermin' => 'float',
-            'MdrGWP' => 'float',
+            'MdrAlamat' => 'string|uppercase',
+            'MdrProvinsiWilayahBU' => 'string|uppercase',
+            'MdrKodeBooking' => 'string|uppercase',
+            'MdrJumlahPeserta' => 'int',
+            'MdrPremiDisetahunkan' => 'float|money-short',
+            'MdrPremiPerTermin' => 'float|money-short',
+            'MdrGWP' => 'float|money-short',
             'MdrKomitmentAgen' => 'boolean',
             'MdrKomitmenKaUnit' => 'boolean',
-            'MdrStatusAktivitas' => 'string',
+            'MdrStatusAktivitas' => 'string|uppercase',
             'MdrTanggalAktifitasBerkahir' => 'datetime',
-            'MdrKeteranganProgres' => 'string',
-            'CreatedById' => 'guid'
+            'MdrKeteranganProgres' => 'string|uppercase',
+            'MdrPremiPerBulan' => 'float|money-short',
+            'MdrTmt' => 'datetime',
+            'MdrTmb' => 'datetime',
+            'MdrRenewalJatuhTempo' => 'string|uppercase',
+            'MdrTahunPipeline' => 'string',
+            'MdrTanggalLahirDireksi' => 'datetime',
+            'MdrKeteranganSinergiBankMandiri' => 'string|uppercase',
+            'MdrKodeBU' => 'string'
         ];
     }
 }

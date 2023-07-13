@@ -6,10 +6,13 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Models\Contact;
 use App\Models\SalesActivity;
+use App\Traits\MapResponseTrait;
 use Illuminate\Support\Arr;
 
 class SalesActivityRepository
 {
+    use MapResponseTrait;
+
     public $salesActivityImage = "https://cdn-mdr.appbuilder.my.id/Sales-Activity.jpg";
 
     public function getAll($contactId, $filter = null)
@@ -82,55 +85,35 @@ class SalesActivityRepository
             ->where('Id', $id)
             ->get()
             ->map(function($item) {
-                return $this->mapResponse($item, $this->salesActivityImage);
+                $mapResponse = $this->mapResponse($item, $this->salesActivityImage);
+                foreach($this->getFloatColumn() as $key => $value) {
+                    if(str_contains($value, 'float|money-short')) {
+                        $mapResponse->{$key} = $this->getFloatColumnValue($item->{$key}, 'money');
+                    }
+                }
+
+                return $mapResponse;
             })
             ->first();
     }
 
     public function mapResponse($item, $image) 
     {
-        $newItem = [];
-
-        $stringColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'string' || $value == 'datetime';
-        }, ARRAY_FILTER_USE_BOTH);
-        $guidColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'guid';
-        }, ARRAY_FILTER_USE_BOTH);
-        $floatColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'float';
-        }, ARRAY_FILTER_USE_BOTH);
-        $booleanColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'boolean';
-        }, ARRAY_FILTER_USE_BOTH);
-
-        foreach ($stringColumn as $key => $value) {
-            $newItem[$key] = $item->{$key};
-        }
-
-        foreach ($floatColumn as $key => $value) {
-            $newItem[$key] = 'IDR '.number_format((float)$item->{$key}, 2);
-        }
-
-        foreach ($booleanColumn as $key => $value) {
-            $newItem[$key] = (bool)$item->{$key};
-        }
-
-        foreach ($guidColumn as $key => $value) {
-            $prefix = substr($key, 0, 3);
-            $lookupProp = $prefix == 'Mdr' ? substr($key, 3, -2) : substr($key, 0, -2);
-            $newItem[$lookupProp] = !empty($item->{$lookupProp}) ? $item->{$lookupProp}->getDisplayValue() : "";
-        }
+        $newItem = $this->bindingColumnWithValue($item);
 
         $pipeline = !empty($item->Pipeline) ? $item->Pipeline : null;
 
-        $newItem['Id'] = $item->Id;
-        $newItem['Alamat'] = !empty($pipeline) ? $pipeline->MdrAlamat : "";
-        $newItem['KodePos'] = !empty($pipeline) ? (!empty($pipeline->KodePosLookup) ? $pipeline->KodePosLookup->getDisplayValue() : "") : "";
-        $newItem['NoTelp'] = !empty($pipeline) ? $pipeline->MdrNoTelp : "";
-        $newItem['Email'] = !empty($pipeline) ? $pipeline->MdrEmail : "";
-        $newItem['GWP'] = !empty($pipeline) ? 'IDR '.number_format((float)$pipeline->MdrGWP, 2) : "IDR 0.00";
-        $newItem['CreatedBy'] = !empty($pipeline) ? (!empty($pipeline->CreatedBy) ? $pipeline->CreatedBy->getDisplayValue() : "") : "";
+        $newItem['Alamat'] = !empty($pipeline) ? strtoupper($pipeline->MdrAlamat) : "";
+        $newItem['PolisStatus'] = $this->getGuidColumnValue($pipeline, 'PolisStatus', 'uppercase');
+        $newItem['Provinsi'] = $this->getGuidColumnValue($pipeline, 'Provinsi', 'uppercase');
+        $newItem['Kabupaten'] = $this->getGuidColumnValue($pipeline, 'Kabupaten', 'uppercase');
+        $newItem['Kecamatan'] = $this->getGuidColumnValue($pipeline, 'Kecamatan', 'uppercase');
+        $newItem['Kelurahan'] = $this->getGuidColumnValue($pipeline, 'Kelurahan', 'uppercase');
+        $newItem['KodePos'] = $this->getGuidColumnValue($pipeline, 'KodePosLookup', 'uppercase');
+        $newItem['NoTelp'] = !empty($pipeline) ? $pipeline->MdrNoTelp : $this->stringEmpty();
+        $newItem['Email'] = !empty($pipeline) ? $pipeline->MdrEmail : $this->stringEmpty();
+        $newItem['GWP'] = !empty($pipeline) ? $this->getFloatColumnValue($pipeline->MdrGWP, 'money') : $this->floatEmpty('money');
+        $newItem['CreatedBy'] = $this->getGuidColumnValue($pipeline, 'CreatedBy', 'uppercase');
         $newItem['image'] = [
             'id' => 0,
             'full' => [
@@ -147,9 +130,27 @@ class SalesActivityRepository
     private function select()
     {
         return SalesActivity::with('Pipeline')
-            ->with('Pipeline.KodePosLookup')
-            ->with('Pipeline.CreatedBy')
             ->with('UpdateAktivitas')
+            ->with('KanalDistribusi')
+            ->with('NamaBadanUsaha')
+            ->with('KategoriAsuransiEksisting')
+            ->with('AsuransiEkisting')
+            ->with('SinergiBankMandiri')
+            ->with('KepalaUnit')
+            ->with('AgenAsuransi')
+            ->with('NamaBroker')
+            ->with('TipeProses')
+            ->with('ProdukAsuransiSebelumnya')
+            ->with('KategoriAsuransiKompetitor')
+            ->with('ProdukDitawarkan')
+            ->with('AsuransiKompetitor')
+            ->with('KategoriAsuransiPemenang')
+            ->with('AsuransiPemenang')
+            ->with('KategoriLoss1')
+            ->with('KategoriLoss2')
+            ->with('Produk')
+            ->with('KategoriLapse1')
+            ->with('KategoriLapse2')
             ->addSelect(array_map(function($item) {
                 return 'MdrSalesActivity.'.$item;
             }, array_keys($this->column())));
@@ -158,17 +159,49 @@ class SalesActivityRepository
     private function column()
     {
         return [
-            'MdrPipelineId' => 'guid',
-            'MdrUpdateAktivitasId' => 'guid',
+            'MdrPipelineId' => 'guid|uppercase',
+            'MdrUpdateAktivitasId' => 'guid|uppercase',
+            'MdrKanalDistribusiId' => 'guid|uppercase',
+            'MdrNamaBadanUsahaId' => 'guid|uppercase',
+            'MdrKategoriAsuransiEksistingId' => 'guid|uppercase',
+            'MdrAsuransiEkisitingId' => 'guid|uppercase',
+            'MdrSinergiBankMandiriId' => 'guid|uppercase',
+            'MdrKepalaUnitId' => 'guid|uppercase',
+            'MdrAgenAsuransiId' => 'guid|uppercase',
+            'MdrNamaBrokerId' => 'guid|uppercase',
+            'MdrTipeProsesId' => 'guid|uppercase',
+            'MdrProdukAsuransiSebelumnyaId' => 'guid|uppercase',
+            'MdrKategoriAsuransiKompetitorId' => 'guid|uppercase',
+            'MdrProdukDitawarkanId' => 'guid|uppercase',
+            'MdrAsuransiKompetitorId' => 'guid|uppercase',
+            'MdrAsuransiPemenangId' => 'guid|uppercase',
+            'MdrKategoriAsuransiPemenangId' => 'guid|uppercase',
+            'MdrKategoriLoss1Id' => 'guid|uppercase',
+            'MdrKategoriLoss2Id' => 'guid|uppercase',
+            'MdrProdukId' => 'guid|uppercase',
+            'MdrKategoriLapse1Id' => 'guid|uppercase',
+            'MdrKategoriLapse2Id' => 'guid|uppercase',
             'Id' => 'guid|primary',
-            'MdrKodeBooking' => 'string',
+            'MdrKodeBooking' => 'string|uppercase',
             'CreatedOn' => 'datetime',
             'ModifiedOn' => 'datetime',
-            'MdrStatusAktivitas' => 'string',
-            'MdrKeteranganProgres' => 'string',
+            'MdrStatusAktivitas' => 'string|uppercase',
+            'MdrKeteranganProgres' => 'string|uppercase',
             'MdrCommitment' => 'boolean',
             'MdrLastActivityDate' => 'datetime',
-            'MdrPerkiranClosing' => 'string'
+            'MdrPerkiranClosing' => 'string|uppercase',
+            'MdrKeteranganSinergiBankMandiri' => 'string|uppercase',
+            'MdrHargaPenawaran' => 'float|money-short',
+            'MdrTMT' => 'datetime',
+            'MdrHargaPenawaranKompetitor' => 'float|money-short',
+            'MdrTMB' => 'datetime',
+            'MdrAlasanMandiriTerpilih' => 'string|uppercase',
+            'MdrHargaPenawaranPemenang' => 'float|money-short',
+            'MdrKeteranganLoss' => 'string|uppercase',
+            'MdrAlasanPindahProduk' => 'string|uppercase',
+            'MdrLossRasio' => 'float|percent',
+            'MdrAlasanLapse' => 'string|uppercase',
+            'MdrPremiDisetahunkan' => 'float|money-short'
         ];
     }
 }

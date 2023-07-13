@@ -57,7 +57,67 @@ class Quotation extends CreatioModel
         return $this->belongsTo(TujuanKlaimReimburse::class, 'MdrTujuanKlaimReimburseDiSetujuiId', 'Id');
     }
 
-    public function installment()
+    public function Title()
+    {
+        return $this->belongsTo(Saluation::class, 'MdrTitleId', 'Id');
+    }
+
+    public function CaraBayar()
+    {
+        return $this->belongsTo(CaraBayar::class, 'MdrCaraBayarId', 'Id');
+    }
+
+    public function SLAPembayaranPremPengajuan()
+    {
+        return $this->belongsTo(SLAPembayaranPengajuan::class, 'MdrSLAPembayaranPremPengajuanId', 'Id');
+    }
+
+    public function SLABayarKlaimReimburse()
+    {
+        return $this->belongsTo(SLABayarKlaimReimburse::class, 'MdrSLABayarKlaimReimburseId', 'Id');
+    }
+
+    public function KadaluarsaKlaim()
+    {
+        return $this->belongsTo(KadaluarsaKlaimReimburse::class, 'MdrKadaluarsaKlaimId', 'Id');
+    }
+
+    public function KadaluarsaReKlaim()
+    {
+        return $this->belongsTo(KadaluarsaReKlaimReimburse::class, 'MdrKadaluarsaReKlaimId', 'Id');
+    }
+
+    public function MaxUsiaAnakPengajuan()
+    {
+        return $this->belongsTo(UsiaAnak::class, 'MdrMaxUsiaAnakPengajuanId', 'Id');
+    }
+
+    public function BackdatedMutasiPeserta()
+    {
+        return $this->belongsTo(BackdatedMutasiPeserta::class, 'MdrBackdatedMutasiPesertaId', 'Id');
+    }
+
+    public function PreExistingCondition()
+    {
+        return $this->belongsTo(PreExistingCondition::class, 'MdrPreExistingConditionId', 'Id');
+    }
+
+    public function RefundPremi()
+    {
+        return $this->belongsTo(RefundPremi::class, 'MdrRefundPremiId', 'Id');
+    }
+
+    public function ASOType()
+    {
+        return $this->belongsTo(ASOType::class, 'MdrASOTypeId', 'Id');
+    }
+
+    public function Plan()
+    {
+        return $this->belongsTo(SetupIndemnity::class, 'MdrPlanId', 'Id');
+    }
+
+    public function Installment()
     {
         return $this->hasMany(QuotationInstallment::class, 'MdrQuotationId', 'Id');
     }

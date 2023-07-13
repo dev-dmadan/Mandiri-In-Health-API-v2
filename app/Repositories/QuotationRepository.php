@@ -6,10 +6,13 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Models\Contact;
 use App\Models\Quotation;
+use App\Traits\MapResponseTrait;
 use Illuminate\Support\Arr;
 
 class QuotationRepository
 {
+    use MapResponseTrait;
+
     public $top5Quotationmage = "https://cdn-mdr.appbuilder.my.id/Top-5-Quotation.jpg";
     public $quotationmage = "https://cdn-mdr.appbuilder.my.id/Page-Quotation.jpg";
 
@@ -49,9 +52,7 @@ class QuotationRepository
 
         if(!empty($search)) {
             $data->where(function($query) use($search) {
-                $stringColumn = array_filter($this->column(), function($value, $key) {
-                    return $key == 'string';
-                }, ARRAY_FILTER_USE_BOTH);
+                $stringColumn = $this->getStringColumn();
                 for ($i=0; $i < count($stringColumn); $i++) { 
                     if($i == 0) {
                         $query->where($stringColumn[$i], 'like', '%'.$search.'%');
@@ -73,19 +74,19 @@ class QuotationRepository
     
     public function get($id) {
         return $this->select()
-            ->with(['installment' => function ($query) {
+            ->with(['Installment' => function ($query) {
                 $query->select('MdrQuotationId', 'MdrName', 'MdrDueDate', 'MdrPercentage');
             }])
             ->where('Id', $id)
             ->get()
             ->map(function($item) {
                 $mapResponse = $this->mapResponse($item, $this->quotationmage);
-                $mapResponse->installment = [];
-                foreach ($item->installment as $key => $value) {
-                    $mapResponse->installment[$key] = (object)[
-                        'MdrName' => $value->MdrName,
-                        'MdrDueDate' => $value->MdrDueDate,
-                        'MdrPercentage' => $value->MdrPercentage,
+                $mapResponse->Installment = [];
+                foreach ($item->Installment as $key => $value) {
+                    $mapResponse->Installment[$key] = (object)[
+                        'MdrName' => $this->getStringColumnValue($value->MdrName, 'uppercase'),
+                        'MdrDueDate' => $this->getDateTimeColumnValue($value->MdrDueDate),
+                        'MdrPercentage' => $this->getFloatColumnValue($value->MdrPercentage, 'percent'),
                     ];
                 }
                 
@@ -95,46 +96,19 @@ class QuotationRepository
     }
 
     public function mapResponse($item, $image) {
-        $newItem = [];
-
-        $stringColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'string' || $value == 'datetime';
-        }, ARRAY_FILTER_USE_BOTH);
-        $guidColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'guid';
-        }, ARRAY_FILTER_USE_BOTH);
-        $floatColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'float';
-        }, ARRAY_FILTER_USE_BOTH);
-        $booleanColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'boolean';
-        }, ARRAY_FILTER_USE_BOTH);
-
-        foreach ($stringColumn as $key => $value) {
-            $newItem[$key] = $item->{$key};
-        }
-
-        foreach ($floatColumn as $key => $value) {
-            $newItem[$key] = 'IDR '.number_format((float)$item->{$key}, 2);
-        }
-
-        foreach ($booleanColumn as $key => $value) {
-            $newItem[$key] = (bool)$item->{$key};
-        }
-
-        foreach ($guidColumn as $key => $value) {
-            $prefix = substr($key, 0, 3);
-            $lookupProp = $prefix == 'Mdr' ? substr($key, 3, -2) : substr($key, 0, -2);
-            $newItem[$lookupProp] = !empty($item->{$lookupProp}) ? $item->{$lookupProp}->getDisplayValue() : "";
-        }
+        $newItem = $this->bindingColumnWithValue($item);
 
         $BUName = !empty($item->BUName) ? $item->BUName : null;
         
-        $newItem['Id'] = $item->Id;
-        $newItem['Alamat'] = !empty($BUName) ? $BUName->MdrAlamat : "";
-        $newItem['KodePos'] = !empty($BUName) ? (!empty($BUName->KodePosLookup) ? $BUName->KodePosLookup->getDisplayValue() : "") : "";
-        $newItem['GWP'] = !empty($BUName) ? 'IDR '.number_format((float)$BUName->MdrGWP, 2) : "IDR 0.00";
-        $newItem['CreatedBy'] = !empty($BUName) ? (!empty($BUName->CreatedBy) ? $BUName->CreatedBy->getDisplayValue() : "") : "";
+        $newItem['PolisStatus'] = $this->getGuidColumnValue($BUName, 'PolisStatus', 'uppercase');
+        $newItem['Alamat'] = !empty($BUName) ? strtoupper($BUName->MdrAlamat) : "";
+        $newItem['KodePos'] = $this->getGuidColumnValue($BUName, 'KodePosLookup', 'uppercase');
+        $newItem['Kelurahan'] = $this->getGuidColumnValue($BUName, 'Kelurahan', 'uppercase');
+        $newItem['Kecamatan'] = $this->getGuidColumnValue($BUName, 'Kecamatan', 'uppercase');
+        $newItem['Kabupaten'] = $this->getGuidColumnValue($BUName, 'Kabupaten', 'uppercase');
+        $newItem['Provinsi'] = $this->getGuidColumnValue($BUName, 'Provinsi', 'uppercase');
+        $newItem['GWP'] = $this->getFloatColumnValue($BUName->MdrGWP, 'money-short');
+        $newItem['CreatedBy'] = $this->getGuidColumnValue($BUName, 'CreatedBy', 'uppercase');
         $newItem['image'] = [
             'id' => 0,
             'full' => [
@@ -159,6 +133,18 @@ class QuotationRepository
             ->with('SkemaProduct')
             ->with('TujuanKlaimReimbursePengajuan')
             ->with('TujuanKlaimReimburseDiSetujui')
+            ->with('Title')
+            ->with('CaraBayar')
+            ->with('SLABayarKlaimReimburse')
+            ->with('KadaluarsaKlaim')
+            ->with('KadaluarsaReKlaim')
+            ->with('SLAPembayaranPremPengajuan')
+            ->with('MaxUsiaAnakPengajuan')
+            ->with('BackdatedMutasiPeserta')
+            ->with('PreExistingCondition')
+            ->with('RefundPremi')
+            ->with('ASOType')
+            ->with('Plan')
             ->addSelect(array_map(function($item) {
                 return 'MdrQuotation.'.$item;
             }, array_keys($this->column())));
@@ -167,16 +153,28 @@ class QuotationRepository
     private function column()
     {
         return [
-            'MdrKanalDistribusiId' => 'guid',
-            'MdrBUNameId' => 'guid',
-            'MdrQuotationStatusId' => 'guid',
-            'MdrAgentNameId' => 'guid',
-            'MdrKAUNITId' => 'guid',
-            'MdrKepalaKanalId' => 'guid',
-            'MdrProductId' => 'guid',
-            'MdrSkemaProductId' => 'guid',
-            'MdrTujuanKlaimReimbursePengajuanId' => 'guid',
-            'MdrTujuanKlaimReimburseDiSetujuiId' => 'guid',
+            'MdrKanalDistribusiId' => 'guid|uppercase',
+            'MdrBUNameId' => 'guid|uppercase',
+            'MdrQuotationStatusId' => 'guid|uppercase',
+            'MdrAgentNameId' => 'guid|uppercase',
+            'MdrKAUNITId' => 'guid|uppercase',
+            'MdrKepalaKanalId' => 'guid|uppercase',
+            'MdrProductId' => 'guid|uppercase',
+            'MdrSkemaProductId' => 'guid|uppercase',
+            'MdrTujuanKlaimReimbursePengajuanId' => 'guid|uppercase',
+            'MdrTujuanKlaimReimburseDiSetujuiId' => 'guid|uppercase',
+            'MdrTitleId' => 'guid|uppercase',
+            'MdrCaraBayarId' => 'guid|uppercase',
+            'MdrSLABayarKlaimReimburseId' => 'guid|uppercase',
+            'MdrKadaluarsaKlaimId' => 'guid|uppercase',
+            'MdrKadaluarsaReKlaimId' => 'guid|uppercase',
+            'MdrSLAPembayaranPremPengajuanId' => 'guid|uppercase',
+            'MdrMaxUsiaAnakPengajuanId' => 'guid|uppercase',
+            'MdrBackdatedMutasiPesertaId' => 'guid|uppercase',
+            'MdrPreExistingConditionId' => 'guid|uppercase',
+            'MdrRefundPremiId' => 'guid|uppercase',
+            'MdrASOTypeId' => 'guid|uppercase',
+            'MdrPlanId' => 'guid|uppercase',
             'Id' => 'guid|primary',
             'CreatedOn' => 'datetime', 
             'ModifiedOn'=> 'datetime', 
@@ -195,74 +193,77 @@ class QuotationRepository
             'MdrWellnessProgram' => 'boolean',
             'MdrTelemedicine' => 'boolean',
             'MdrAso' => 'boolean',
-            'MdrASO1' => 'float',
-            'MdrASO2' => 'float',
-            'MdrASO3' => 'float',
-            'MdrJumlahDepositAso' => 'float',
-            'MdrMinTopUpAso' => 'float',
-            'MdrFeeAso' => 'float',
+            'MdrASO1' => 'float|money-short',
+            'MdrASO2' => 'float|money-short',
+            'MdrASO3' => 'float|money-short',
+            'MdrJumlahDepositAso' => 'float|money-short',
+            'MdrMinTopUpAso' => 'float|money-short',
+            'MdrFeeAso' => 'float|money-short',
             'MdrEkses' => 'boolean',
-            'MdrEKSES1' => 'float',
-            'MdrEKSES2' => 'float',
-            'MdrEKSES3' => 'float',
-            'MdrMinTopUpEkses' => 'float',
+            'MdrEKSES1' => 'float|money-short',
+            'MdrEKSES2' => 'float|money-short',
+            'MdrEKSES3' => 'float|money-short',
+            'MdrMinTopUpEkses' => 'float|money-short',
             'MdrPoolfund' => 'boolean',
-            'MdrPoolfund1' => 'float',
-            'MdrPoolfund2' => 'float',
-            'MdrPoolfund3' => 'float',
-            'MdrPoolfund4' => 'float',
-            'MdrPoolfund5' => 'float',
-            'MdrName' => 'string',
-            'MdrDireksiName' => 'string',
-            'MdrPICName' => 'string',
-            'MdrPhoneNumber' => 'string',
+            'MdrPoolfund1' => 'float|money-short',
+            'MdrPoolfund2' => 'float|money-short',
+            'MdrPoolfund3' => 'float|money-short',
+            'MdrPoolfund4' => 'float|money-short',
+            'MdrPoolfund5' => 'float|money-short',
+            'MdrName' => 'string|uppercase',
+            'MdrDireksiName' => 'string|uppercase',
+            'MdrPICName' => 'string|uppercase',
+            'MdrPhoneNumber' => 'string|uppercase',
             'MdrEmail' => 'string',
-            'MdrNameOnCard' => 'string',
-            'MdrAlias' => 'string',
-            'MdrNoProposal' => 'string',
-            'MdrBookingCode' => 'string',
-            'MdrKomisiPersentasePengajuan' => 'string',
-            'MdrORPersentasePengajuan' => 'string',
-            'MdrIPPersentasePengajuan' => 'string',
-            'MdrKomisiPersentaseDiSetujui' => 'string',
-            'MdrORPersentaseDiSetujui' => 'string',
-            'MdrIPPersentaseDiSetujui' => 'string',
-            'MdrSLAPembayaranPremiPengajuan' => 'string',
-            'MdrSLAPembayaranKlaimPengajuan' => 'string',
-            'MdrKadaluarsaKlaimPengajuan' => 'string',
-            'MdrReKlaimPengajuan' => 'string',
-            'MdrSLAPembayaranPremiDiSetujui' => 'string',
-            'MdrSLAPembayaranKlaimDiSetujui' => 'string',
-            'MdrKadaluarsaKlaimDiSetujui' => 'string',
-            'MdrReKlaimDisetujui' => 'string',
-            'MdrTotalPesertaPengajuan' => 'string',
-            'MdrTotalPegawaiPengajuan' => 'string',
-            'MdrMaxUsiaDewasaPengajuan' => 'string',
-            'MdrMaxUsiaAnakPengaujan' => 'string',
-            'MdrMaxJumlahAnakPengajuan' => 'string',
-            'MdrMaxUsiaPersalinanPengajuan' => 'string',
-            'MdrMaxJumlahPersalinanPengajuan' => 'string',
-            'MdrTotalPesertaDiSetujui' => 'string',
-            'MdrTotalPegawaiDiSetujui' => 'string',
-            'MdrMaxUsiaDewasaDiSetujui' => 'string',
-            'MdrMaxUsiaAnakDisetujui' => 'string',
-            'MdrMaxJumlahAnakDiSetujui' => 'string',
-            'MdrMaxUsiaPersalinanDiSetujui' => 'string',
-            'MdrMaxJumlahPersalinanDisetujui' => 'string',
-            'MdrCatatanHealthtalk' => 'string',
-            'MdrCatatanMinimcu' => 'string',
-            'MdrCatatanMedivac' => 'string',
-            'MdrCatatanOverseas' => 'string',
-            'MdrCatatanPickUpClaim' => 'string',
-            'MdrCatatanProfitSharing' => 'string',
-            'MdrCatatanWellnessProgram' => 'string',
-            'MdrCatatamTelemedicine' => 'string',
-            'MdrUnderwritingNotes' => 'string',
-            'MdrVirtualAso' => 'string',
-            'MdrCatatanAso' => 'string',
-            'MdrVirtualEkses' => 'string',
-            'MdrCatatanEkses' => 'string',
-            'MdrCatatanPoolfund' => 'string',
+            'MdrNameOnCard' => 'string|uppercase',
+            'MdrAlias' => 'string|uppercase',
+            'MdrNoProposal' => 'string|uppercase',
+            'MdrBookingCode' => 'string|uppercase',
+            'MdrKomisiPersentasePengajuan' => 'float|percent',
+            'MdrORPersentasePengajuan' => 'float|percent',
+            'MdrIPPersentasePengajuan' => 'float|percent',
+            'MdrKomisiPersentaseDiSetujui' => 'float|percent',
+            'MdrORPersentaseDiSetujui' => 'float|percent',
+            'MdrIPPersentaseDiSetujui' => 'float|percent',
+            'MdrSLAPembayaranPremiPengajuan' => 'string|uppercase',
+            'MdrSLAPembayaranKlaimPengajuan' => 'string|uppercase',
+            'MdrKadaluarsaKlaimPengajuan' => 'string|uppercase',
+            'MdrReKlaimPengajuan' => 'string|uppercase',
+            'MdrSLAPembayaranPremiDiSetujui' => 'int',
+            'MdrSLAPembayaranKlaimDiSetujui' => 'int',
+            'MdrKadaluarsaKlaimDiSetujui' => 'int',
+            'MdrReKlaimDisetujui' => 'int',
+            'MdrTotalPesertaPengajuan' => 'int',
+            'MdrTotalPegawaiPengajuan' => 'int',
+            'MdrMaxUsiaDewasaPengajuan' => 'int',
+            'MdrMaxUsiaAnakPengaujan' => 'int',
+            'MdrMaxJumlahAnakPengajuan' => 'int',
+            'MdrMaxUsiaPersalinanPengajuan' => 'int',
+            'MdrMaxJumlahPersalinanPengajuan' => 'int',
+            'MdrTotalPesertaDiSetujui' => 'int',
+            'MdrTotalPegawaiDiSetujui' => 'int',
+            'MdrMaxUsiaDewasaDiSetujui' => 'int',
+            'MdrMaxUsiaAnakDisetujui' => 'int',
+            'MdrMaxJumlahAnakDiSetujui' => 'int',
+            'MdrMaxUsiaPersalinanDiSetujui' => 'int',
+            'MdrMaxJumlahPersalinanDisetujui' => 'int',
+            'MdrCatatanHealthtalk' => 'string|uppercase',
+            'MdrCatatanMinimcu' => 'string|uppercase',
+            'MdrCatatanMedivac' => 'string|uppercase',
+            'MdrCatatanOverseas' => 'string|uppercase',
+            'MdrCatatanPickUpClaim' => 'string|uppercase',
+            'MdrCatatanProfitSharing' => 'string|uppercase',
+            'MdrCatatanWellnessProgram' => 'string|uppercase',
+            'MdrCatatamTelemedicine' => 'string|uppercase',
+            'MdrUnderwritingNotes' => 'string|uppercase',
+            'MdrVirtualAso' => 'string|uppercase',
+            'MdrCatatanAso' => 'string|uppercase',
+            'MdrVirtualEkses' => 'string|uppercase',
+            'MdrCatatanEkses' => 'string|uppercase',
+            'MdrCatatanPoolfund' => 'string|uppercase',
+            'MdrKategoriPenyakit2' => 'string|uppercase',
+            'MdrKategoriPenyakit3' => 'string|uppercase',
+            'MdrCatatanMarketing' => 'string|uppercase'
         ]; 
     }
 }

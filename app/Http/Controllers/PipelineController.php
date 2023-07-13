@@ -32,7 +32,9 @@ class PipelineController extends Controller
 
         $type = $request->query('type');
         $perPage = !empty($request->query('per_page')) ? $request->query('per_page') : 10;
-        
+        $orderBy = !empty($request->query('order')) ? 'MdrPipeline.'.$request->query('order') : 'MdrPipeline.CreatedOn';
+        $direction = !empty($request->query('direction')) ? $request->query('direction') : 'DESC';
+
         switch ($type) {
             case 'top-3':
                 $data = empty($contactId) ? 
@@ -62,7 +64,7 @@ class PipelineController extends Controller
                                 'isKomit' => $isKomit
                             ]
                         )
-                        ->orderBy('CreatedOn', 'DESC')
+                        ->orderBy($orderBy, $direction)
                         ->paginate($perPage)
                         ->through(function ($item, $key) {                
                             return $this->pipelineRepo->mapResponse($item, $this->pipelineRepo->pipelineImage);
