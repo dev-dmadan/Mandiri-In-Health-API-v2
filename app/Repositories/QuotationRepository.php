@@ -263,7 +263,16 @@ class QuotationRepository
             'MdrCatatanPoolfund' => 'string|uppercase',
             'MdrKategoriPenyakit2' => 'string|uppercase',
             'MdrKategoriPenyakit3' => 'string|uppercase',
-            'MdrCatatanMarketing' => 'string|uppercase'
+            'MdrCatatanMarketing' => 'string|uppercase',
+            'MdrASODepositAwal' => 'float|money',
+            'MdrASOTopUP' => 'int',
+            'MdrBenefitSubenefit2' => 'boolean',
+            'MdrBenefitSubenefit3' => 'boolean',
+            'MdrEksesDiTagihDiTempat' => 'boolean',
+            'MdrDepositEkses' => 'boolean',
+            'MdrJumlahDepositEkses' => 'float|money-short',
+            'MdrTopUpEkses' => 'int',
+            
         ]; 
     }
 }
