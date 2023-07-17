@@ -49,6 +49,7 @@ class CreatioService
                 'UserName' => $this->username ?? env('CREATIO_USERNAME'),
                 'UserPassword' => $this->password ?? env('CREATIO_PASSWORD'),
             ]);
+
             if(!$response->successful() || $response->failed()) {
                 $response->throw();
             }

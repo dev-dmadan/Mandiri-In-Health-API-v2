@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Contact;
 use App\Repositories\PipelineRepository;
+use App\Traits\MapResponseTrait;
 use Illuminate\Http\Request;
 
 class AchievementAgentController extends Controller
 {
+    use MapResponseTrait;
+
     public $achievementAgentImage = "https://cdn-mdr.appbuilder.my.id/Achievement-Agent.jpg";
 
     /**
