@@ -3,6 +3,7 @@
 use App\Http\Controllers\AchievementAgentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClosingController;
+use App\Http\Controllers\LookupController;
 use App\Http\Controllers\PipelineController;
 use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\SalesActivityController;
@@ -73,5 +74,8 @@ Route::middleware('secret_key_is_valid')->group( function () {
             Route::delete('/{id}', [ClosingController::class, 'destroy'])
                 ->whereUuid('id');
         });
+
+        Route::get('/lookup/{lookup}', [LookupController::class, 'index'])
+            ->where('lookup', '[A-Za-z-]+');
     });
 });

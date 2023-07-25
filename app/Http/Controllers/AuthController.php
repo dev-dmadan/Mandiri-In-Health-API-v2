@@ -20,8 +20,17 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        $debug = [];
+
+        $debug[] = "Login Creatio";
+
         $tryLogin = $this->creatio->login();
+        
+        $debug[] = $tryLogin;
+        
         if(!$tryLogin->success) { 
+            dd($debug);
+
             return response()->json([   
                 'success' => false,
                 'message' => 'Username or Password is wrong',

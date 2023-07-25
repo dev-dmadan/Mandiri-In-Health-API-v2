@@ -1,0 +1,279 @@
+@extends('dashboard.layoutDashbordPipeline')
+
+@section('custom-chart')
+
+<!-- Custom Row 1-->
+<div class="row"> 
+    <!-- CLOSING -->
+    <div class="col-md-4 col-lg-4">
+        <div class="mb-3 card" style="background-color: #7030A0;background-image:url('/img/Untitled-7-01.png');background-repeat: no-repeat;background-size: auto;">
+            <div class="card-body" style="text-align: center;">
+                <div><i class="fa fa-line-chart" aria-hidden="true"  style="font-size:48px;color:white"></i></div>
+                <div id="totalRecordPipelineClosing"><b><span class="text-white" style="font-size:45px;"></span></b></div>
+                <div><b><span class="text-white" style="font-size:25px;">CLOSING</span></b></div>
+                <div id="totalANPPipelineClosing"><b><span style="font-size:25px; color:#FFBF00""></span></b></div>
+
+            </div>
+        </div>
+    </div>
+    <!-- LAPSE -->
+    <div class="col-md-4 col-lg-4">
+        <div class="mb-3 card" style="background-color: #FF289E;background-image:url('/img/Untitled-6-01.png');background-repeat: no-repeat;background-size: auto;">
+            <div class="card-body" style="text-align: center;">
+                <div><i class="fa-regular fa-hourglass-half" style="font-size:48px;color:white"></i></div>
+                <div id="totalRecordPipelineLapse"><b><span class="text-white" style="font-size:45px;"></span></b></div>
+                <div><b><span class="text-white" style="font-size:25px;">LAPSE</span></b></div>
+                <div id="totalANPPipelineLapse"><b><span style="font-size:25px; color:#FFBF00""></span></b></div>
+            </div>
+        </div>
+    </div>
+    <!--- IN PROGRESS -->
+     <div class="col-md-4 col-lg-4">
+        <div class="mb-3 card" style="background-color: #4472C4;background-image:url('/img/Untitled-5-01.png');background-repeat: no-repeat;background-size: auto;">
+            <div class="card-body" style="text-align: center;">
+                <div><i class="fas fa-tasks" style="font-size:48px;color:white"></i></div>
+                <div id="totalRecordPipelineInProgress"><b><span class="text-white" style="font-size:45px;"></span></b></div>
+                <div><b><span class="text-white" style="font-size:25px;">IN PROGRESS</span></b></div>
+                <div id="totalANPPipelineInProgress"><b><span  style="font-size:25px; color:#FFBF00""></span></b></div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+<div class="row"> 
+    <!--- PIPELINE NEW BUSINESS BY PROGRESS -->
+    <div class="col-md-6 col-lg-6">
+       <div class="mb-2 card">
+           <div class="card-header-tab card-header-tab-animation card-header">
+               <div>
+                  <h6><b>PIPELINE RENEWAL BY PROGRESS</b></h6> 
+               </div>
+           </div>
+           <div class="card-body">
+               <div class="tab-content">
+                   <div class="tab-pane fade show active" id="tabs-eg-77">
+                       <div class="card mb-3 widget-chart widget-chart2 text-left w-100">
+                           <div class="widget-chat-wrapper-outer">
+                               <div class="widget-chart-wrapper widget-chart-wrapper-lg opacity-10 m-0">
+                                   <div id="chartpipelinebyprogress"></div>
+                                    @section('custom-js')
+                                        <script src="/js/pipelineRenewalDashboard.js"></script>
+                                    @endsection
+                               </div>
+                           </div>
+                       </div>
+                           <h6><b>PIPELINE RENEWAL BY PROGRESS</b></h6>
+                        <div  class="table-scroll" style="height: 220px">
+                            <table id="tableListPipelineByProgress" class="main-table table table-borderless table-striped table-hover text-nowrap">
+                              <thead>
+                                <tr>
+                                  <th scope="col" class="align-middle text-center">NO</th>
+                                  <th scope="col" class="align-middle text-center">PROGRESS</th>
+                                  <th scope="col" class="align-middle text-center">JUMLAH BU</th>
+                                  <th scope="col" class="align-middle text-center">ANP</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                              </tbody>
+                              <tfoot>
+                              </tfoot>
+                            </table>
+                        </div>
+                       {{-- <div class="scroll-area-sm">
+                           <div class="scrollbar-container">
+                               <div class="table-responsive">
+                               <table id="tableListPipelineByProgress"
+                                   class="align-middle mb-0 table table-borderless table-striped table-hover">
+                                   <thead>
+                                       <tr style="background-color:#16aaff;color:white;font-weight: bold;">
+                                           <th style="width:10%;">NO</th>
+                                           <th style="text-align:center;width:20%;">PROGRESS</th>
+                                           <th style="text-align:center;width:20%;">JUMLAH BU</th>
+                                           <th style="text-align:center;width:20%;">ANP</th>
+                                       </tr>
+                                   </thead>
+                                  <tbody></tbody>
+                               </table>
+                               </div>
+
+                           </div>
+                       </div> --}}
+                   </div>
+               </div>
+           </div>
+       </div>
+    </div>
+
+    <!--- LIST TOP 10 PIPELINE IN PROGRES RENEWAL -->
+    <div class="col-md-6 col-lg-6">
+        <div class="mb-3 card">
+            <div class="card-header-tab card-header-tab-animation card-header">
+                <div class="card-header-title">
+                  <h6><b>TOP 10 PIPELINE IN PROGRESS RENEWAL</b></h6> 
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="tabs-eg-77">
+                        <div class="scrollbar-container">
+                            <div class="table-responsive">
+                                <table id="tableTopBuInProgress"
+                                    class="align-middle mb-0 table table-borderless table-striped table-hover">
+                                    <thead>
+                                        <tr style="background-color:#16aaff;color:white;font-weight: bold;">
+                                            <th style="text-align:center; width:5%;">NO</th>
+                                            <th style="text-align:center;width:20%;">BADAN USAHA</th>
+                                            <th style="text-align:center;width:20%;">ANP</th>
+                                            <th style="text-align:center;width:20%;">PREMI/TERMIN</th>
+                                            <th style="text-align:center;width:20%;">PRODUK</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot style="background-color:#16aaff;color:white;font-weight: bold;"></tfoot>
+                                </table>
+                        
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div> 
+
+<!--- Custom List Row 2 -->
+<div class="row" style="padding-top: 20px"> 
+                    
+    <!--- LIST TOP 10 PIPELINE LAPSE RENEWAL -->
+    <div class="col-md-6 col-lg-6">
+        <div class="mb-3 card">
+            <div class="card-header-tab card-header-tab-animation card-header">
+                <div class="card-header-title">
+                 <h6><b>TOP 10 PIPELINE LAPSE RENEWAL</b></h6>  
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="tabs-eg-77">
+                        <div class="scrollbar-container">
+                            <div class="table-responsive">
+                                <table id="tableTopBuLapse"
+                                    class="align-middle mb-0 table table-borderless table-striped table-hover">
+                                    <thead>
+                                        <tr style="background-color:#16aaff;color:white;font-weight: bold;">
+                                            <th style="text-align:center; width:5%;">NO</th>
+                                            <th style="text-align:center;width:20%;">BADAN USAHA</th>
+                                            <th style="text-align:center;width:20%;">ANP</th>
+                                            <th style="text-align:center;width:20%;">PREMI/TERMIN</th>
+                                            <th style="text-align:center;width:20%;">PRODUK</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot style="background-color:#16aaff;color:white;font-weight: bold;"></tfoot>
+                                </table>
+                        
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--- LIST TOP 10 PIPELINE CLOSING -->
+    <div class="col-md-6 col-lg-6">
+        <div class="mb-3 card">
+            <div class="card-header-tab card-header-tab-animation card-header">
+                <div class="card-header-title">
+                    <h6><b>TOP 10 BU PIPELINE CLOSING RENEWAL</b></h6> 
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="tabs-eg-77">
+                        <div class="scrollbar-container">
+                            <div class="table-responsive">
+                                <table id="tableTopBuClosing"
+                                    class="align-middle mb-0 table table-borderless table-striped table-hover">
+                                    <thead>
+                                        <tr style="background-color:#16aaff;color:white;font-weight: bold;">
+                                            <th style="text-align:center; width:5%;">NO</th>
+                                            <th style="text-align:center;width:20%;">BADAN USAHA</th>
+                                            <th style="text-align:center;width:20%;">ANP</th>
+                                            <th style="text-align:center;width:20%;">PREMI/TERMIN</th>
+                                            <th style="text-align:center;width:20%;">PRODUK</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                    <tfoot style="background-color:#16aaff;color:white;font-weight: bold;"></tfoot>
+                                </table>
+                        
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+  <!--- Custom List Row 3 -->
+<div class="row">
+    <!--- REKAP PIPELINE RENEWAL -->
+   <div class="col-md-12 col-lg-12">
+       <div class="mb-3 card">
+           <div class="card-header-tab card-header-tab-animation card-header">
+               <div class="card-header-title">
+                  <h6><b>REKAP PIPELINE RENEWAL</b></h6> 
+               </div>
+           </div>
+           
+           <div class="card-body">
+               <div class="tab-content">
+                   <div class="tab-pane fade show active" id="tabs-eg-77">
+                       
+                           <div class="scrollbar-container">
+                               <div class="table-responsive">
+                                   <table id="tableRekapPipelineRenewal"
+                                       class="align-middle mb-0 table table-striped table-hover">
+                                       <thead>
+                                            <tr style="background-color:#16aaff;color:white;font-weight: bold;">
+                                               <th style="border: 1px solid" rowspan='2' class="text-center align-middle">NO</th>
+                                               <th style="border: 1px solid" rowspan='2' class="text-center align-middle">KANAL DISTRIBUSI</th>
+                                               <th style="border: 1px solid" class="text-center" colspan='2'>LAPSED</th>
+                                               <th style="border: 1px solid" class="text-center" colspan='2'>CLOSING</th>
+                                               <th style="border: 1px solid" class="text-center" colspan='2'>IN-PROGRESS</th>
+                                               <th style="border: 1px solid" class="text-center" colspan='2'>TOTAL</th>
+                                            </tr>
+                                            <tr style="background-color:#16aaff;color:white;font-weight: bold;">
+                                                <th style="border: 1px solid" class="text-center">JML BU</th>
+                                                <th style="border: 1px solid" class="text-center">ANP</th>
+                                                <th style="border: 1px solid" class="text-center">JML BU</th>
+                                                <th style="border: 1px solid" class="text-center">ANP</th>
+                                                <th style="border: 1px solid" class="text-center">JML BU</th>
+                                                <th style="border: 1px solid" class="text-center">ANP</th>
+                                                <th style="border: 1px solid" class="text-center">JML BU</th>
+                                                <th style="border: 1px solid" class="text-center">ANP</th>
+                                            </tr>
+                                       </thead>
+                                       <tbody></tbody>
+                                       <tfoot style="background-color:#16aaff;color:white;font-weight: bold;"></tfoot>
+                                   </table>
+                               </div>
+                           </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </div>
+</div>
+
+@endsection
+
+@section('custom-js')
+    <script src="/js/pipelineRenewalDashboard.js"></script>
+@endsection

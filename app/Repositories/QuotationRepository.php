@@ -101,7 +101,7 @@ class QuotationRepository
         $BUName = !empty($item->BUName) ? $item->BUName : null;
         
         $newItem['PolisStatus'] = $this->getGuidColumnValue($BUName, 'PolisStatus', 'uppercase');
-        $newItem['Alamat'] = !empty($BUName) ? strtoupper($BUName->MdrAlamat) : "";
+        $newItem['Alamat'] = !empty($BUName) ? strtoupper($BUName->MdrAlamat) : $this->stringEmpty();
         $newItem['KodePos'] = $this->getGuidColumnValue($BUName, 'KodePosLookup', 'uppercase');
         $newItem['Kelurahan'] = $this->getGuidColumnValue($BUName, 'Kelurahan', 'uppercase');
         $newItem['Kecamatan'] = $this->getGuidColumnValue($BUName, 'Kecamatan', 'uppercase');

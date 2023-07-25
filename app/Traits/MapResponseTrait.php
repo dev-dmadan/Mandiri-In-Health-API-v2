@@ -167,14 +167,13 @@ trait MapResponseTrait
             if(str_contains($option, 'short')) {
                 $pembagi = 1;
                 $akhiran = "";
-                if((float)$value >= 1000000000000) { // triliyun
+                if((float)$value >= 1000000000000) {
                     $pembagi = 1000000000000;
                     $akhiran = " T";
-                }
-                else if((float)$value >= 1000000000) { // Milyar
+                } else if((float)$value >= 1000000000) {
                     $pembagi = 1000000000;
                     $akhiran = " M";
-                } else if((float)$value >= 1000000) { // Juta
+                } else if((float)$value >= 1000000) {
                     $pembagi = 1000000;
                     $akhiran = " JT";
                 } else if((float)$value >= 1000) {
@@ -194,14 +193,14 @@ trait MapResponseTrait
     public function getIntColumn()
     {
         return array_filter($this->column(), function($value, $key) {
-            return $value == 'int';
+            return $value == 'integer' || $value == 'int';
         }, ARRAY_FILTER_USE_BOTH);
     }
 
     public function getBoolColumn()
     {
         return array_filter($this->column(), function($value, $key) {
-            return $value == 'boolean';
+            return $value == 'boolean' || $value == 'bool';
         }, ARRAY_FILTER_USE_BOTH);
     }
 

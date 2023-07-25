@@ -16,10 +16,10 @@ class CreatioService
     private $password;
     private $request;
 
-    public function __construct($username, $password)
+    public function __construct($username = null, $password = null)
     {
-        $this->username = $username;
-        $this->password = $password;
+        $this->username = $username ?? env('CREATIO_USERNAME');
+        $this->password = $password ?? env('CREATIO_PASSWORD');
         $this->request = (Object)[];
 
         $this->jar = Cache::has("creatio_cookies_".$username) ? Cache::get("creatio_cookies_".$username) : new \GuzzleHttp\Cookie\CookieJar();
@@ -124,7 +124,7 @@ class CreatioService
         return $this->errorResponse('Unauthenticated', 401);
     }
 
-    public function post($data)
+    public function post($data = null)
     {
         $i = 0;
         while ($i < 2) {
@@ -155,7 +155,7 @@ class CreatioService
         return $this->errorResponse('Unauthenticated', 401);
     }
 
-    public function put($id, $data)
+    public function put($id, $data = null)
     {
         $uri = $this->request->type == 'odata' ? $this->getUri().'('.$id.')' : $this->getUri().'/'.$id;
         $i = 0;
@@ -187,7 +187,7 @@ class CreatioService
         return $this->errorResponse('Unauthenticated', 401);
     }
 
-    public function patch($id, $data)
+    public function patch($id, $data = null)
     {
         $uri = $this->request->type == 'odata' ? $this->getUri().'('.$id.')' : $this->getUri().'/'.$id;
         $i = 0;
@@ -214,7 +214,7 @@ class CreatioService
                 return $this->errorResponse('Unauthenticated', 401);
             }
 
-            return $this->successResponse($response->json(), $response->status());
+            return $this->successResponse(!empty($response->json()) ? $response->json() : null, 200);
         }
 
         return $this->errorResponse('Unauthenticated', 401);
@@ -323,9 +323,10 @@ class CreatioService
     }
 
     private function successResponse($body, $statusCode = 200)
-    {
+    {  
         return response()->json([
             'success' => true,
+            'message' => null,
             'response' => $body
         ], $statusCode);
     }
@@ -334,7 +335,8 @@ class CreatioService
     {
         return response()->json([
             'success' => false,
-            'message' => $message
+            'message' => $message,
+            'response' => null
         ], $statusCode);
     }
 }

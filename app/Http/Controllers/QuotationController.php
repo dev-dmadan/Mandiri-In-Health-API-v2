@@ -30,6 +30,8 @@ class QuotationController extends Controller
 
         $type = $request->query('type');
         $perPage = !empty($request->query('per_page')) ? $request->query('per_page') : 10;
+        $orderBy = !empty($request->query('order')) ? 'MdrQuotation.'.$request->query('order') : 'MdrQuotation.CreatedOn';
+        $direction = !empty($request->query('direction')) ? $request->query('direction') : 'DESC';
         
         switch ($type) {
             case 'top-5':
@@ -59,7 +61,7 @@ class QuotationController extends Controller
                             'statusId' => $statusId,
                         ]
                     )
-                    ->orderBy('CreatedOn', 'DESC')
+                    ->orderBy($orderBy, $direction)
                     ->paginate($perPage)
                     ->through(function ($item, $key) {                
                         return $this->quotationRepo->mapResponse($item, $this->quotationRepo->quotationmage);

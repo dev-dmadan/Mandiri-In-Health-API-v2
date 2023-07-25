@@ -14,6 +14,7 @@ class CreatioModel extends Model
     const UPDATED_AT = 'ModifiedOn';
 
     public $incrementing = false;
+    protected $primaryKey = 'Id';
     protected $keyType = 'string';
 
     public function getDisplayValue() 

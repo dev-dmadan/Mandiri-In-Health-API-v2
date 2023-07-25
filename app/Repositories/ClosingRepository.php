@@ -6,10 +6,13 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Models\Contact;
 use App\Models\Closing;
+use App\Traits\MapResponseTrait;
 use Illuminate\Support\Arr;
 
 class ClosingRepository
 {
+    use MapResponseTrait;
+
     public $closingImage = "https://cdn-mdr.appbuilder.my.id/Page-Closing.jpg";
 
     public function getAll($contactId, $filter = null)
@@ -89,41 +92,19 @@ class ClosingRepository
 
     public function mapResponse($item, $image) 
     {
-        $newItem = [];
-
-        $stringColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'string' || $value == 'datetime';
-        }, ARRAY_FILTER_USE_BOTH);
-        $guidColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'guid';
-        }, ARRAY_FILTER_USE_BOTH);
-        $booleanColumn = array_filter($this->column(), function($value, $key) {
-            return $value == 'boolean';
-        }, ARRAY_FILTER_USE_BOTH);
-
-        foreach ($stringColumn as $key => $value) {
-            $newItem[$key] = $item->{$key};
-        }
-
-        foreach ($booleanColumn as $key => $value) {
-            $newItem[$key] = (bool)$item->{$key};
-        }
-
-        foreach ($guidColumn as $key => $value) {
-            $prefix = substr($key, 0, 3);
-            $lookupProp = $prefix == 'Mdr' ? substr($key, 3, -2) : substr($key, 0, -2);
-            $newItem[$lookupProp] = !empty($item->{$lookupProp}) ? $item->{$lookupProp}->getDisplayValue() : "";
-        }
+        $newItem = $this->bindingColumnWithValue($item);
 
         $pipeline = !empty($item->Pipeline) ? $item->Pipeline : null;
         $quotation = !empty($item->Quotation) ? $item->Quotation : null;
 
-        $newItem['Id'] = $item->Id;
-        $newItem['Alamat'] = !empty($pipeline) ? $pipeline->MdrAlamat : "";
-        $newItem['KodePos'] = !empty($pipeline) ? (!empty($pipeline->KodePosLookup) ? $pipeline->KodePosLookup->getDisplayValue() : "") : "";
-        $newItem['CreatedBy'] = !empty($pipeline) ? (!empty($pipeline->CreatedBy) ? $pipeline->CreatedBy->getDisplayValue() : "") : "";
-        $newItem['PhoneNumber'] = !empty($quotation) ? $quotation->MdrPhoneNumber : "";
-        $newItem['Email'] = !empty($quotation) ? $quotation->MdrEmail : "";
+        $newItem['Alamat'] = !empty($pipeline) ? strtoupper($pipeline->MdrAlamat) : $this->stringEmpty();
+        $newItem['KodePos'] = $this->getGuidColumnValue($pipeline, 'KodePosLookup', 'uppercase');
+        $newItem['PolisStatus'] = $this->getGuidColumnValue($pipeline, 'PolisStatus', 'uppercase');
+        $newItem['KanalDistribusi'] = $this->getGuidColumnValue($pipeline, 'KanalDistribusi', 'uppercase');
+        $newItem['CreatedBy'] = $this->getGuidColumnValue($pipeline, 'CreatedBy', 'uppercase');
+        $newItem['PhoneNumber'] = !empty($quotation) ? $quotation->MdrPhoneNumber : $this->stringEmpty();
+        $newItem['Email'] = !empty($quotation) ? $quotation->MdrEmail : $this->stringEmpty();
+        $newItem['CreatedBy'] = $this->getGuidColumnValue($pipeline, 'CreatedBy', 'uppercase');
         $newItem['image'] = [
             'id' => 0,
             'full' => [
@@ -140,11 +121,10 @@ class ClosingRepository
     private function select()
     {
         return Closing::with('Pipeline')
-            ->with('Pipeline.KodePosLookup')
-            ->with('Pipeline.CreatedBy')
             ->with('Quotation')
             ->with('ClosingStatus')
             ->with('Product')
+            ->with('CreatedBy')
             ->addSelect(array_map(function($item) {
                 return 'MdrClosing.'.$item;
             }, array_keys($this->column())));
@@ -153,15 +133,17 @@ class ClosingRepository
     private function column()
     {
         return [
-            'MdrPipelineId' => 'guid',
-            'MdrQuotationId' => 'guid',
-            'MdrClosingStatusId' => 'guid',
+            'MdrPipelineId' => 'guid|uppercase',
+            'MdrQuotationId' => 'guid|uppercase',
+            'MdrClosingStatusId' => 'guid|uppercase',
+            'MdrProductId' => 'guid|uppercase',
+            'CreatedById' => 'guid|uppercase',
             'Id' => 'guid|primary',
             'CreatedOn' => 'datetime',
             'ModifiedOn' => 'datetime',
-            'MdrName' => 'string',
-            'MdrNotes' => 'string',
-            'MdrSLAHari' => 'string',
+            'MdrName' => 'string|uppercase',
+            'MdrNotes' => 'string|uppercase',
+            'MdrSLAHari' => 'int',
             'MdrPendingDokumen' => 'boolean',
         ];
     }

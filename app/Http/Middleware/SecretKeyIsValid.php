@@ -15,7 +15,7 @@ class SecretKeyIsValid
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $secretKey = env("CREATIO_SECRET_KEY");
+        $secretKey = env("SECRET_KEY");
         if ($request->query('SecretKey') !== $secretKey) {
             return response()->json([   
                 'success' => false,

@@ -1,0 +1,248 @@
+.custom-select {
+  position: relative;
+  font-family: Arial;
+}
+
+.custom-select select {
+  display: none;
+  /*hide original SELECT element: */
+}
+
+/* .pull-right {
+  background-color: #32B4EC !important;
+} */
+
+.scrollbar-container {
+  width: auto !important;
+}
+
+.clear {
+  clear: both;
+}
+
+
+.text-bg-royalblue {
+  background-color: #4169e1;
+  color: #ffffff;
+}
+
+.text-bg-orange {
+  background-color: #dd1b9f;
+  color: #ffffff;
+}
+
+.total {
+  color: #ffd500;
+  font-weight: bold;
+}
+
+.select-selected {
+  background-color: DodgerBlue;
+}
+
+div#reportrange:hover {
+  cursor: pointer;
+  color: #145bc5;
+}
+
+.float-left {
+  float: left;
+}
+
+.float-right {
+  float: right;
+}
+
+.float-clear {
+  clear: both;
+}
+
+/* Style the arrow inside the select element: */
+.select-selected:after {
+  position: absolute;
+  content: "";
+  top: 14px;
+  right: 10px;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-color: #fff transparent transparent transparent;
+}
+
+/* Point the arrow upwards when the select box is open (active): */
+.select-selected.select-arrow-active:after {
+  border-color: transparent transparent #fff transparent;
+  top: 7px;
+}
+
+/* style the items (options), including the selected item: */
+.select-items div,
+.select-selected {
+  color: #ffffff;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
+  cursor: pointer;
+}
+
+/* Style items (options): */
+.select-items {
+  position: absolute;
+  background-color: DodgerBlue;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 99;
+}
+
+/* Hide the items when the select box is closed: */
+.select-hide {
+  display: none;
+}
+
+.select-items div:hover,
+.same-as-selected {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.highcharts-figure,
+.highcharts-data-table table {
+  min-width: 310px;
+  max-width: 800px;
+  margin: 1em auto;
+}
+
+/* #container {
+  height: 400px;
+}
+
+#container2 {
+  height: 400px;
+}
+
+#container3 {
+  height: 400px;
+}
+
+#container4 {
+  height: 400px;
+} */
+
+
+.highcharts-data-table table {
+  font-family: Verdana, sans-serif;
+  border-collapse: collapse;
+  border: 1px solid #ebebeb;
+  margin: 10px auto;
+  text-align: center;
+  width: 100%;
+  max-width: 500px;
+}
+
+.highcharts-data-table caption {
+  padding: 1em 0;
+  font-size: 1.2em;
+  color: #555;
+}
+
+.highcharts-data-table th {
+  font-weight: 600;
+  padding: 0.5em;
+}
+
+.highcharts-data-table td,
+.highcharts-data-table th,
+.highcharts-data-table caption {
+  padding: 0.5em;
+}
+
+.highcharts-data-table thead tr,
+.highcharts-data-table tr:nth-child(even) {
+  background: #f8f8f8;
+}
+
+.highcharts-data-table tr:hover {
+  background: #f1f7ff;
+}
+
+/* loading */
+.box-custom {
+  border-top: 3px solid #32B4EC;
+  border-radius: unset;
+}
+
+.loader-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  z-index: -1;
+  transition: opacity .3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+}
+
+.loader-wrapper .loader {
+  height: 80px;
+  width: 80px;
+}
+
+.loader-wrapper.is-active {
+  opacity: 1;
+  z-index: 1;
+}
+
+.is-loading {
+  position: relative;
+}
+
+/* style new loading start */
+.Preloader {
+  background-color: rgba(0, 0, 0, 0.5);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.Preloader-squareContainer {
+  width: 500px;
+  height: 100px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.Preloader-square {
+  width: 20px;
+  height: 20px;
+  background-color: #fff;
+  margin-right: 2px;
+}
+
+.Preloader-square:last-child {
+  margin-right: 0;
+}
+
+.Preloader-message {
+  font-family: Arial;
+  color: #fff;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* style new loading end */

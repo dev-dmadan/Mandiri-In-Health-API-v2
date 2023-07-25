@@ -25,7 +25,9 @@ class ClosingController extends Controller
         $isKomit = $request->query('is_komit');
 
         $perPage = !empty($request->query('per_page')) ? $request->query('per_page') : 10;
-        
+        $orderBy = !empty($request->query('order')) ? 'MdrClosing.'.$request->query('order') : 'MdrClosing.CreatedOn';
+        $direction = !empty($request->query('direction')) ? $request->query('direction') : 'DESC';
+
         $data = empty($contactId) ? 
             $this->emptyClosing()->paginate($perPage) : 
             $this->closingRepo->getAll(
@@ -40,7 +42,7 @@ class ClosingController extends Controller
                     // 'statusId' => $statusId,
                 ]
             )
-            ->orderBy('CreatedOn', 'DESC')
+            ->orderBy($orderBy, $direction)
             ->paginate($perPage)
             ->through(function ($item, $key) {                
                 return $this->closingRepo->mapResponse($item, $this->closingRepo->closingImage);
