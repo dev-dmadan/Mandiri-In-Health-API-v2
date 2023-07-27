@@ -6,6 +6,8 @@ use Carbon\Carbon;
 
 trait MapResponseTrait 
 {
+    public $stringEmpty = "";
+
     public function bindingColumnWithValue($item)
     {
         $column = [];
@@ -49,7 +51,8 @@ trait MapResponseTrait
 
             if($type == 'boolean') {
                 foreach ($columnList as $key => $value) {
-                    $column[$key] = (bool)$item->{$key};
+                    $splitType = explode('|', $value);
+                    $column[$key] = $this->getBoolColumnValue($item->{$key}, count($splitType) > 1 ? $splitType[1] : null);
                 }
                 
                 continue;
@@ -57,19 +60,15 @@ trait MapResponseTrait
 
             if($type == 'datetime') {
                 foreach ($columnList as $key => $value) {
-                    $column[$key] = $this->getDateTimeColumnValue($item->{$key});                    
+                    $splitType = explode('|', $value);
+                    $column[$key] = $this->getDateTimeColumnValue($item->{$key}, count($splitType) > 1 ? $splitType[1] : null);                    
                 }
 
                 continue;
             }
         }
 
-        return $column;
-    }
-
-    public function stringEmpty()
-    {
-        return "-";
+        return (object)$column;
     }
 
     public function floatEmpty($type = null)
@@ -107,7 +106,7 @@ trait MapResponseTrait
             return $item->{$lookupProperty};
         }
 
-        $value = !empty($item->{$lookupProperty}) ? $item->{$lookupProperty}->getDisplayValue() : $this->stringEmpty();
+        $value = !empty($item->{$lookupProperty}) ? $item->{$lookupProperty}->getDisplayValue() : $this->stringEmpty;
         return $this->getStringColumnValue(
             value: $value,
             option: $option
@@ -135,7 +134,7 @@ trait MapResponseTrait
     public function getStringColumnValue($value, $option = null)
     {
         if(empty($value)) {
-            return $this->stringEmpty();
+            return $this->stringEmpty;
         }
 
         if($option == 'uppercase') {
@@ -200,8 +199,19 @@ trait MapResponseTrait
     public function getBoolColumn()
     {
         return array_filter($this->column(), function($value, $key) {
-            return $value == 'boolean' || $value == 'bool';
+            $isExists = str_contains(explode('|', $value)[0], 'bool');
+            return $isExists === false ? false : true;
         }, ARRAY_FILTER_USE_BOTH);
+    }
+
+    public function getBoolColumnValue($value, $option = null)
+    {
+        if(empty($option)) {
+            return (bool)$value;
+        }
+
+        $splitOption = explode(',', $option);
+        return count($splitOption) > 1 ? $splitOption[(bool)$value ? 0 : 1] : (bool)$value;
     }
 
     public function getDateTimeColumn()
@@ -214,8 +224,9 @@ trait MapResponseTrait
 
     public function getDateTimeColumnValue($value, $option = null)
     {
+        $format = empty($option) ? 'd-m-Y' : $option;
         return Carbon::parse($value, 'UTC')
             ->setTimezone('Asia/Jakarta')
-            ->format('d-m-Y');
+            ->format($format);
     }
 }

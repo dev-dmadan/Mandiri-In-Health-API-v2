@@ -151,4 +151,9 @@ class Pipeline extends CreatioModel
     {
         return $this->belongsTo(BadanUsaha::class, 'MdrNamaBURenewalId', 'Id');
     }
+
+    public function Bulan()
+    {
+        return $this->belongsTo(Month::class, 'MdrBulanId', 'Id');
+    }
 }

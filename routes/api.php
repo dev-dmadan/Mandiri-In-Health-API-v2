@@ -75,7 +75,12 @@ Route::middleware('secret_key_is_valid')->group( function () {
                 ->whereUuid('id');
         });
 
+        Route::group(['prefix' => 'agent'], function () {
+            Route::get('/', [ClosingController::class, 'index']);
+        });
+
         Route::get('/lookup/{lookup}', [LookupController::class, 'index'])
             ->where('lookup', '[A-Za-z-]+');
+        Route::get('/lookup-filter', [LookupController::class, 'lookupForFilter']);
     });
 });

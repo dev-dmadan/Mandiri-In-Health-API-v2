@@ -22,13 +22,15 @@ class PipelineController extends Controller
     {
         $contactId = $request->query('contact');
         $search = $request->query('search');
-        $kanalId = $request->query('kanal');
-        $produkId = $request->query('produk');
-        $kepalaUnitId = $request->query('kepala_unit');
-        $agentId = $request->query('agent');
-        $statusId = $request->query('status');
-        $statusPolisId = $request->query('status_polis');
-        $isKomit = $request->query('is_komit');
+        $jenis = $request->query('jenis');
+        $polisStatus = $request->query('polis_status');
+        $kanal = $request->query('kanal');
+        $produk = $request->query('produk');
+        $namaBU = $request->query('nama_bu');
+        $kepalaKanit = $request->query('kepala_kanit');
+        $tahun = $request->query('tahun');
+        $agent = $request->query('agent');
+        $bulan = $request->query('bulan');
 
         $type = $request->query('type');
         $perPage = !empty($request->query('per_page')) ? $request->query('per_page') : 10;
@@ -55,13 +57,15 @@ class PipelineController extends Controller
                             contactId: $contactId,
                             filter: [
                                 'search' => $search,
-                                'kanalId' => $kanalId,
-                                'produkId' => $produkId,
-                                'kepalaUnitId' => $kepalaUnitId,
-                                'agentId' => $agentId,
-                                'statusId' => $statusId,
-                                'statusPolisId' => $statusPolisId,
-                                'isKomit' => $isKomit
+                                'jenis' => $jenis,
+                                'polis_status' => $polisStatus,
+                                'kanal' => $kanal,
+                                'produk' => $produk,
+                                'nama_bu' => $namaBU,
+                                'kepala_kanit' => $kepalaKanit,
+                                'tahun' => $tahun,
+                                'agent' => $agent,
+                                'bulan' => $bulan
                             ]
                         )
                         ->orderBy($orderBy, $direction)

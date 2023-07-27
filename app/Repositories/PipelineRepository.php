@@ -26,36 +26,16 @@ class PipelineRepository
         $isKAKANAL = strtolower($type) == '74b619e2-533a-44cd-a929-ec4869f865fa';
         $isAE = strtolower($type) == '806732ee-f36b-1410-a883-16d83cab0980';
 
-        $data = $this->select()
-            ->when($isAE, function ($query) use($contactId) {
-                $query->where('CreatedById', $contactId);
-            })
-            ->when($isKAKANIT || $isKAKANAL, function ($query) use($kanal) {
-                $query->where('MdrKanalDistribusiId', $kanal);
-            }, function ($query) use($contactId) {
-                return $query->where('CreatedById', $contactId);
-            });
+        $data = $this->select();
         
         if(empty($filter)) {
             return $data;
         }
 
-        $search = Arr::has($filter, 'search') && !empty($filter['search']) ? $filter['search'] : null;
-        $isKomit = Arr::has($filter, 'isKomit') ? $filter['isKomit'] : null;
-        $lookupFilter = [
-            'MdrKanalDistribusiId' => Arr::has($filter, 'kanalId') && !empty($filter['kanalId']) ? $filter['kanalId'] : null,
-            'MdrProdukId' => Arr::has($filter, 'produkId') && !empty($filter['produkId']) ? $filter['produkId'] : null,
-            'MdrKaUnitId' => Arr::has($filter, 'kepalaUnitId') && !empty($filter['kepalaUnitId']) ? $filter['kepalaUnitId'] : null,
-            'MdrInsuranceAgentId' => Arr::has($filter, 'agentId') && !empty($filter['agentId']) ? $filter['agentId'] : null,
-            'MdrStatusId' => Arr::has($filter, 'statusId') && !empty($filter['statusId']) ? $filter['statusId'] : null,
-            'MdrPolisStatusId' => Arr::has($filter, 'statusPolisId') && !empty($filter['statusPolisId']) ? $filter['statusPolisId'] : null
-        ];
-
-        if(!empty($search)) {
+        if(!empty($filter['search'])) {
+            $search = $filter['search'];
             $data->where(function($query) use($search) {
-                $stringColumn = array_filter($this->column(), function($value, $key) {
-                    return $key == 'string';
-                }, ARRAY_FILTER_USE_BOTH);
+                $stringColumn = $this->getStringColumn();
                 for ($i=0; $i < count($stringColumn); $i++) { 
                     if($i == 0) {
                         $query->where($stringColumn[$i], 'like', '%'.$search.'%');
@@ -66,10 +46,70 @@ class PipelineRepository
             });
         }
 
-        if(!is_null($isKomit)) {
-            $data->where("MdrKomitmentAgen", (int)$isKomit);
+        if(!empty($filter['jenis'])) {
+            $dataForUse = [
+                'isAE' => $isAE, 
+                'isKAKANIT' => $isKAKANIT, 
+                'isKAKANAL' => $isKAKANAL, 
+                'contactId' => $contactId, 
+                'kanal' => $kanal
+            ];
+            $data->when($filter['jenis'] == 'all', function($query) use($dataForUse) {
+                $query->when($dataForUse['isAE'], function($query) use($dataForUse) {
+                    $query->where('CreatedById', $dataForUse['contactId']);
+                })
+                ->when($dataForUse['isKAKANIT'] || $dataForUse['isKAKANAL'], function ($query) use($dataForUse) {
+                    $query->where('MdrKanalDistribusiId', $dataForUse['kanal']);
+                });
+            })
+            ->when($filter['jenis'] == 'komitment_ka_unit', function ($query) use($dataForUse) {
+                $query->where('MdrKomitmenKaUnit', true)
+                ->when($dataForUse['isAE'], function($query) use($dataForUse) {
+                    $query->where('CreatedById', $dataForUse['contactId']);
+                })
+                ->when($dataForUse['isKAKANIT'] || $dataForUse['isKAKANAL'], function ($query) use($dataForUse) {
+                    $query->where('MdrKanalDistribusiId', $dataForUse['kanal']);
+                });
+            })
+            ->when($filter['jenis'] == 'quotation', function ($query) use($dataForUse) {
+                $query->whereNotNull('MdrQuotationId')
+                ->whereHas('Quotation', function($query) {
+                    $query->whereNotNull('MdrNoProposal')
+                        ->where('MdrNoProposal', '<>', '');
+                })
+                ->when($dataForUse['isAE'], function($query) use($dataForUse) {
+                    $query->where('CreatedById', $dataForUse['contactId']);
+                })
+                ->when($dataForUse['isKAKANIT'] || $dataForUse['isKAKANAL'], function ($query) use($dataForUse) {
+                    $query->where('MdrKanalDistribusiId', $dataForUse['kanal']);
+                });
+            })
+            ->when($filter['jenis'] == 'bu_kanal', function ($query) use($dataForUse) {
+                $query->where('MdrKanalDistribusiId', $dataForUse['kanal']);
+            });
+        } else {
+            $data->when($isAE, function ($query) use($contactId) {
+                $query->where('CreatedById', $contactId);
+            })
+            ->when($isKAKANIT || $isKAKANAL, function ($query) use($kanal) {
+                $query->where('MdrKanalDistribusiId', $kanal);
+            }, function ($query) use($contactId) {
+                return $query->where('CreatedById', $contactId);
+            });
         }
 
+        if(!empty($filter['tahun'])) {
+            $data->where('MdrTahunPipeline', $filter['tahun']);
+        }
+
+        $lookupFilter = [
+            'MdrPolisStatusId' => $filter['polis_status'],
+            'MdrKanalDistribusiId' => $filter['kanal'],
+            'MdrProdukId' => $filter['produk'],
+            'MdrKaUnitId' => $filter['kepala_kanit'],
+            'MdrInsuranceAgentId' => $filter['agent'],
+            'MdrBulanId' => $filter['bulan'],
+        ];
         foreach ($lookupFilter as $key => $value) {
             if(!empty($value) && Str::of($value)->isUuid()) {
                 $data->where($key, $value);
@@ -221,6 +261,7 @@ class PipelineRepository
             ->with('PaymentMethod')
             ->with('NamaBURenewal')
             ->with('CreatedBy')
+            ->with('Bulan')
             ->addSelect(array_map(function($item) {
                 return 'MdrPipeline.'.$item;
             }, array_keys($this->column())));
@@ -286,7 +327,8 @@ class PipelineRepository
             'MdrTahunPipeline' => 'string',
             'MdrTanggalLahirDireksi' => 'datetime',
             'MdrKeteranganSinergiBankMandiri' => 'string|uppercase',
-            'MdrKodeBU' => 'string'
+            'MdrKodeBU' => 'string',
+            'MdrBulanId' => 'guid|uppercase'
         ];
     }
 }
