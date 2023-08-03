@@ -85,6 +85,7 @@ class IntegrationController extends Controller
                 'method' => 'UpdateStatusClosing'
             ], 'POST', false, [
                 'transaction_number' => $request->has('transaction_number') ? $request->input('transaction_number') : null,
+                'status' => $request->has('status') ? $request->input('status') : null
             ]);
             
             // $result->success = true;
