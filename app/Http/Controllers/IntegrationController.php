@@ -47,6 +47,56 @@ class IntegrationController extends Controller
         return response()->json($result);
     }
     /**
+    * INSERT PREMI STANDART
+    */
+    public function insertPremiStandard(Request $request)
+    {
+        $result = (Object)array(
+        );
+
+        try {
+            $response = $this->restCreatio([
+                'service' => 'IntegrasiWebService',
+                'method' => 'InsertIndemnityPremiStandard'
+            ], 'POST', false, [
+                'data' => $request->has('data') ? $request->input('data') : null,
+            ]);
+            
+            // $result->success = true;
+            $result = response()->json($response->Response)->original->InsertIndemnityPremiStandardResult;
+        } catch (Exception $e) {
+            $result->message = $e->getMessage();
+            $result->success = false;
+        }
+        
+        return response()->json($result);
+    }
+    /**
+    * INSERT PREMI KELUARGA
+    */
+    public function insertPremiKeluarga(Request $request)
+    {
+        $result = (Object)array(
+        );
+
+        try {
+            $response = $this->restCreatio([
+                'service' => 'IntegrasiWebService',
+                'method' => 'InsertIndemnityPremiKeluarga'
+            ], 'POST', false, [
+                'data' => $request->has('data') ? $request->input('data') : null,
+            ]);
+            
+            // $result->success = true;
+            $result = response()->json($response->Response)->original->InsertIndemnityPremiKeluargaResult;
+        } catch (Exception $e) {
+            $result->message = $e->getMessage();
+            $result->success = false;
+        }
+        
+        return response()->json($result);
+    }
+    /**
     * UPDATE QUOTATION
     */
     public function updateQuotation(Request $request)

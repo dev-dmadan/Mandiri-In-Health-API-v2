@@ -575,6 +575,8 @@ Route::group(['prefix' => 'report'], function () {
 
 Route::group(['prefix' => 'isa/api'], function () {
     Route::post('insert-premi',  [IntegrationController::class, 'insertPremi']);
+    Route::post('insert-premi-standard-indemnity', [IntegrationController::class, 'insertPremiStandard']);
+    Route::post('insert-premi-keluarga-indemnity', [IntegrationController::class, 'insertPremiKeluarga']);
     Route::post('update-quotation',  [IntegrationController::class, 'updateQuotation']);
     Route::post('update-closing',  [IntegrationController::class, 'updateClosing']);
     Route::post('get-agent',  [IntegrationController::class, 'getAgent']);
