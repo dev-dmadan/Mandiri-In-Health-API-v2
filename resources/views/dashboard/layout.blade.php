@@ -18,7 +18,7 @@
             integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w=="
             crossorigin="anonymous" referrerpolicy="no-referrer" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
-        <link rel="stylesheet" href="https://kit.fontawesome.com/563b01ccb8.css" crossorigin="anonymous">
+        {{-- <link rel="stylesheet" href="https://kit.fontawesome.com/563b01ccb8.css" crossorigin="anonymous"> --}}
         <!-- Include Required Prerequisites customer color blue:#7cb5ec-->
         <script type="text/javascript" src="//cdn.jsdelivr.net/jquery/1/jquery.min.js"></script>
         <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -160,7 +160,7 @@
         <script src="https://code.highcharts.com/modules/export-data.js"></script>
         <script src="https://code.highcharts.com/modules/accessibility.js"></script>
         <script src="https://rawgit.com/highcharts/rounded-corners/master/rounded-corners.js"></script>
-        <script src="http://maps.google.com/maps/api/js?sensor=true"></script>
+        {{-- <script src="http://maps.google.com/maps/api/js?sensor=true"></script> --}}
         <script>
             const MIN_YEAR = @json(isset($minYear) ? $minYear : 2010, JSON_PRETTY_PRINT);
             const MAX_YEAR = @json(isset($maxYear) ? $maxYear : null, JSON_PRETTY_PRINT);

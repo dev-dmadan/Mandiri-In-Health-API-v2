@@ -1,72 +1,61 @@
-document.getElementById("polisStatus").addEventListener("change", onChangePolisStatus, false);
-document.getElementById("polisStatusData").addEventListener ("change", onChangePolisStatusData, false);
-document.getElementById("bulan").addEventListener("change", onChangeBulan, false);
-document.getElementById("tahun").addEventListener("change", onChangeTahun, false);
-document.getElementById ("kanalDistribusi").addEventListener ("change", onChangeKanalDistribusi, false);
-document.getElementById ("tipe").addEventListener ("change", onChangeTipe, false);
-document.getElementById ("target").addEventListener ("change", onChangeTarget, false);
-document.getElementById("periode").addEventListener("change", onChangePeriode, false);
+const PERIODE = document.getElementById("periode")
+const BULAN = document.getElementById("bulan")
+const TAHUN = document.getElementById("tahun")
+const KANALDISTRIBUSI = document.getElementById ("kanalDistribusi")
+const TIPE = document.getElementById ("tipe")
+const TARGET = document.getElementById ("target")
+const GUID_EMPTY = "00000000-0000-0000-0000-000000000000"
 
+document.addEventListener('DOMContentLoaded', async function () {
+    document.getElementById("polisStatus").addEventListener("change", onChangePolisStatus, false);
+    document.getElementById("polisStatusData").addEventListener ("change", onChangePolisStatusData, false);
 
-var url = window.location.pathname.split('/');
-var guid = url[4];
-console.log("data id", url);
-
-if (guid != "00000000-0000-0000-0000-000000000000") {
-    localStorage['kanalDistribusiId_PerformanceNasional'] = guid;
-    localStorage["Tipe_Dashboard"] = "19752653-2e64-4683-bb33-548464536c98";
-    localStorage["Target_Dashboard"] = "88ea96e3-a566-4fe3-bd45-4410bd5a2e76";
-
-    var TIPEID = localStorage["Tipe_Dashboard"];
-    var TARGETID = localStorage["Target_Dashboard"];
-    var KANALDISTRIBUSIID = localStorage['kanalDistribusiId_PerformanceNasional']; 
-} else {
-    var KANALDISTRIBUSIID = localStorage['kanalDistribusiId_PerformanceNasional'];
-    var TIPEID = localStorage["Tipe_Dashboard"];
-    var TARGETID = localStorage["Target_Dashboard"];
-}
-
-
-var KANALDISTRIBUSIID = localStorage['kanalDistribusiId_PerformanceNasional'];
-var STARTDATE = localStorage['startDate'];
-var ENDDATE = localStorage['endDate'];
-var POLISSTATUSID = localStorage['polis_status'];
-var POLISSTATUSDATA = localStorage['polis_status_data'];
-var PERIODE = localStorage['Periode_Dashboard'];
-var TAHUN = localStorage['Tahun_Dashboard'];
-var BULANID = localStorage['BulanId_Dashboard'];
-var PRODUKID = localStorage['ProdukId_Dashboard'];
-var TARGETID = localStorage['Target_Dashboard'];
-var TIPEID = localStorage['Tipe_Dashboard'];
-
-document.addEventListener('DOMContentLoaded', function () {
-    init();
+    await init();
 });
 
+async function initFilter() {
+    try {
+        renderFilterPeriode()
+        renderFilterTahun()
+        
+        await Promise.all([
+            renderFilterBulan(),
+            renderFilterKanal(),
+            renderFilterTipeKinerja(),
+            renderFilterTarget(),
+        ])
+
+        // event filter
+        PERIODE.addEventListener("change", initDashboard, false)
+        BULAN.addEventListener("change", initDashboard, false)
+        TAHUN.addEventListener("change", initDashboard, false)
+        KANALDISTRIBUSI.addEventListener ("change", initDashboard, false)
+        TIPE.addEventListener ("change", initDashboard, false)
+        TARGET.addEventListener ("change", initDashboard, false)
+    } catch (error) {
+        console.error('Error in initFilter', {error})
+    }
+}
 
 async function init() {
     try {
-        renderFilter();
-        renderPolisStatus();
-        renderPolisStatusData();
-       
-        renderFilterBulan();
-        renderFilterTahun();
-        renderFilterPeriode();
-        renderFilterTipeKinerja();
-        renderFilterTarget();
+        await initFilter()
+        await initDashboard()
+        // renderPolisStatus();
+        // renderPolisStatusData();
 
-        renderTotalGWP();
-        renderTotalGWPNewBusiness();
-        renderTotalGWPRenewal();
+
+        
+        // renderTotalGWPNewBusiness();
+        // renderTotalGWPRenewal();
         //Chart
-        renderPerformanceGWP();
-        renderPerfromanceKanal();
-        renderPerformanceByProduk();
-        renderSharingProduk();
-        renderTrendGwpPerBulan();
-        renderGwpPerKepemilikan();
-        renderCahartShareProduk();
+        // renderPerformanceGWP();
+        // renderPerfromanceKanal();
+        // renderPerformanceByProduk();
+        // renderSharingProduk();
+        // renderTrendGwpPerBulan();
+        // renderGwpPerKepemilikan();
+        // renderCahartShareProduk();
 
         // renderCahartAnpPerKepemilikan();
         // renderListAnpPerKepemilikan();
@@ -76,26 +65,33 @@ async function init() {
         // renderListAnpPerSektorIndustri();
 
         //List
-        renderListArchievementBySumberBisnis();
-        renderListArchievementByKanal();
-        renderListArchievementByProduct();
-        renderListGwpPerKepemilikan();
-        renderListShareProduk();
+        // renderListArchievementBySumberBisnis();
+        // renderListArchievementByKanal();
+        // renderListArchievementByProduct();
+        // renderListGwpPerKepemilikan();
+        // renderListShareProduk();
         // renderListTopBuInforce();
         // renderListLeadingIndicator();
         // renderListLeadingIndicatorKanal();
         // renderDate();
-        renderChartLeadingProposal();
-        renderChartLeadingPolis();
-        renderChartLeadingANP();
-        renderListLeadingProposal();
-        renderListLeadingPolis();
-        renderListLeadingAnp();
+        // renderChartLeadingProposal();
+        // renderChartLeadingPolis();
+        // renderChartLeadingANP();
+        // renderListLeadingProposal();
+        // renderListLeadingPolis();
+        // renderListLeadingAnp();
 
       
     } catch (error) {
         throw error;
     }
+}
+
+async function initDashboard() {
+    await Promise.all([
+        renderTotalGWP(),
+        renderTotalGWPNewBusiness()
+    ])
 }
 
 
@@ -178,10 +174,7 @@ async function getKanalDistribusi() {
         headers.append("Content-Type", "application/json");
         const req = await fetch(`${APP_URL}/dashboard/api/report-get-kanal-distribusi?SecretKey=${SECRET_KEY}`, {
             method: 'POST',
-            headers: headers,
-            body: JSON.stringify({
-
-            })
+            headers: headers
         });
 
         if (!req.ok) {
@@ -280,9 +273,6 @@ async function getTarget() {
         const req = await fetch(`${APP_URL}/dashboard/api/report-get-target?SecretKey=${SECRET_KEY}`, {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify({
-                
-            })
         });
 
         if (!req.ok) {
@@ -306,9 +296,6 @@ async function getTipeKinerja() {
         const req = await fetch(`${APP_URL}/dashboard/api/report-get-tipe-kinerja?SecretKey=${SECRET_KEY}`, {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify({
-                
-            })
         });
 
         if (!req.ok) {
@@ -335,12 +322,12 @@ async function getTotalPencapaianGwp() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                Tahun: TAHUN,
-                Periode: PERIODE,
-                BulanId : BULANID,
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                TipeId: TIPEID,
-                TargetId: TARGETID,
+                Tahun: TAHUN.value,
+                Periode: PERIODE.value,
+                BulanId : BULAN.value,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                TipeId: TIPE.value,
+                TargetId: TARGET.value,
             })
         });
 
@@ -365,12 +352,12 @@ async function getTotalGWPNewBusiness() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                Tahun: TAHUN,
-                Periode: PERIODE,
-                BulanId : BULANID,
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                TipeId: TIPEID,
-                TargetId: TARGETID,
+                Tahun: TAHUN.value,
+                Periode: PERIODE.value,
+                BulanId : BULAN.value,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                TipeId: TIPE.value,
+                TargetId: TARGET.value,
             })
         });
 
@@ -1061,7 +1048,7 @@ async function getChartLeadingAnp() {
  * RENDER FILTER
  * @returns VIEW
  */
-async function renderFilter() {
+async function renderFilterKanal() {
     try {
         const req = await getKanalDistribusi();
         const result = req.GetKanalDistribusiResult;
@@ -1069,28 +1056,15 @@ async function renderFilter() {
         if (!result.Success) {
             throw result.Message;
         }
-        const selectOption = document.querySelector('#kanalDistribusi');
-        var dataKanal = result.ListKanalDistribusi;
-        
-        if (guid != "00000000-0000-0000-0000-000000000000") {
-            dataKanal = dataKanal.filter(item => item.Id == guid);
-        } else {
-            dataKanal = dataKanal;
-            var opt = document.createElement('option');
-            opt.value = "00000000-0000-0000-0000-000000000000";
-            opt.innerHTML = "ALL KANAL";
-            selectOption.appendChild(opt);
-        }
+
+        const dataKanal = result.ListKanalDistribusi;
+        const firstOpt = new Option("ALL KANAL", GUID_EMPTY, true, true);
+        KANALDISTRIBUSI.append(firstOpt)
 
         dataKanal.forEach(item => {
-            var opt = document.createElement('option');
-            opt.value = item.Id;
-            opt.innerHTML = item.NamaKC;
-            selectOption.appendChild(opt);
+            const opt = new Option(item.NamaKC, item.Id, false, false);
+            KANALDISTRIBUSI.append(opt);
         });
-
-        selectOption.value = KANALDISTRIBUSIID;
-
     } catch (error) {
         throw error;
     }
@@ -1111,7 +1085,7 @@ async function renderPolisStatus() {
 
         const selectOption = document.querySelector('#polisStatus');
         var opt = document.createElement('option');
-        opt.value = "00000000-0000-0000-0000-000000000000";
+        opt.value = GUID_EMPTY;
         opt.innerHTML = "ALL";
         selectOption.appendChild(opt);
 
@@ -1144,7 +1118,7 @@ async function renderPolisStatusData() {
 
         const selectOption = document.querySelector('#polisStatusData');
         var opt = document.createElement('option');
-        opt.value = "00000000-0000-0000-0000-000000000000";
+        opt.value = GUID_EMPTY;
         opt.innerHTML = "ALL";
         selectOption.appendChild(opt);
 
@@ -1176,7 +1150,7 @@ async function renderFilterProduk() {
 
         const selectOption = document.querySelector('#produk');
         var opt = document.createElement('option');
-        opt.value = "00000000-0000-0000-0000-000000000000";
+        opt.value = GUID_EMPTY;
         opt.innerHTML = "ALL PRODUK";
         selectOption.appendChild(opt);
 
@@ -1207,21 +1181,13 @@ async function renderFilterBulan() {
             throw result.Message;
         }
 
-        const selectOption = document.querySelector('#bulan');
-        var opt = document.createElement('option');
-        opt.value = "00000000-0000-0000-0000-000000000000";
-        opt.innerHTML = "ALL BULAN";
-        selectOption.appendChild(opt);
+        const firstOpt = new Option("ALL BULAN", GUID_EMPTY, true, true);
+        BULAN.append(firstOpt);
 
         result.ListBulan.forEach(item => {
-            var opt = document.createElement('option');
-            opt.value = item.Id;
-            opt.innerHTML = item.Name;
-            selectOption.appendChild(opt);
+            const opt = new Option(item.Name, item.Id, false, false)
+            BULAN.append(opt);
         });
-
-        selectOption.value = BULANID;
-
     } catch (error) {
         throw error;
     }
@@ -1233,27 +1199,8 @@ async function renderFilterBulan() {
  */
 async function renderFilterTahun() {
     try {
-        // const data = [
-        //     "2021",
-        //     "2023"
-        // ];
-
-        const selectOption = document.querySelector('#tahun');
-        var opt = document.createElement('option');
-        opt.value = "2023";
-        opt.innerHTML = "2023";
-        opt.selected = true;
-        selectOption.appendChild(opt);
-
-        // data.forEach(item => {
-        //     var opt = document.createElement('option');
-        //     opt.value = item;
-        //     opt.innerHTML = item;
-        //     selectOption.appendChild(opt);
-        // });
-
-        selectOption.value = TAHUN;
-
+        const firstOpt = new Option("2023", "2023", true, true);
+        TAHUN.append(firstOpt);
     } catch (error) {
         throw error;
     }
@@ -1263,28 +1210,16 @@ async function renderFilterTahun() {
  * RENDER FILTER PERIODE
  * @returns VIEW
  */
-async function renderFilterPeriode() {
+function renderFilterPeriode() {
     try {
         const data = [
-            "Ytd"
+            new Option("Mtd", "Mtd", true, true),
+            new Option("Ytd", "Ytd", false, false)
         ];
 
-        const selectOption = document.querySelector('#periode');
-        var opt = document.createElement('option');
-        opt.value = "Mtd";
-        opt.innerHTML = "Mtd";
-        opt.selected = true;
-        selectOption.appendChild(opt);
-
         data.forEach(item => {
-            var opt = document.createElement('option');
-            opt.value = item;
-            opt.innerHTML = item;
-            selectOption.appendChild(opt);
-        });
-
-        selectOption.value = PERIODE;
-
+            PERIODE.append(item)
+        })
     } catch (error) {
         throw error;
     }
@@ -1302,29 +1237,14 @@ async function renderFilterTarget() {
         if (!result.Success) {
             throw result.Message;
         }
-
-        const selectOption = document.querySelector('#target');
         var dataTarget = result.ListTarget;
-
-        if (guid != "00000000-0000-0000-0000-000000000000") {
-            dataTarget = dataTarget.filter(item => item.Id == "88ea96e3-a566-4fe3-bd45-4410bd5a2e76");
-        } else {
-            dataTarget = dataTarget;
-            var opt = document.createElement('option');
-            opt.value = "00000000-0000-0000-0000-000000000000";
-            opt.innerHTML = "ALL";
-            selectOption.appendChild(opt);
-        }
+        const firstOpt = new Option("ALL", GUID_EMPTY, true, true);
+        TARGET.append(firstOpt);
 
         dataTarget.forEach(item => {
-            var opt = document.createElement('option');
-            opt.value = item.Id;
-            opt.innerHTML = item.Name;
-            selectOption.appendChild(opt);
+            var opt = new Option(item.Name, item.Id, false, false);
+            TARGET.append(opt);
         });
-
-        selectOption.value = TARGETID;
-
     } catch (error) {
         throw error;
     }
@@ -1344,29 +1264,14 @@ async function renderFilterTipeKinerja() {
             throw result.Message;
         }
 
-        const selectOption = document.querySelector('#tipe');
-        var dataTipeKinerja = result.ListTipeKinerja;
-
-        if (guid != "00000000-0000-0000-0000-000000000000") {
-            dataTipeKinerja = dataTipeKinerja.filter(item => item.Id == "19752653-2e64-4683-bb33-548464536c98");
-        } else {
-            dataTipeKinerja = dataTipeKinerja;
-            var opt = document.createElement('option');
-            opt.value = "00000000-0000-0000-0000-000000000000";
-            opt.innerHTML = "ALL";
-            selectOption.appendChild(opt);
-        }
+        const dataTipeKinerja = result.ListTipeKinerja;
+        const firstOpt = new Option("ALL", GUID_EMPTY, true, true);
+        TIPE.append(firstOpt);
 
         dataTipeKinerja.forEach(item => {
-            var opt = document.createElement('option');
-            opt.value = item.Id;
-            opt.innerHTML = item.Name;
-            selectOption.appendChild(opt);
+            const opt = new Option(item.Name, item.Id, false, false);
+            TIPE.append(opt);
         });
-
-
-        selectOption.value = TIPEID;
-
     } catch (error) {
         throw error;
     }
