@@ -2,16 +2,24 @@ const PERIODE = document.getElementById("periode")
 const BULAN = document.getElementById("bulan")
 const TAHUN = document.getElementById("tahun")
 const KANALDISTRIBUSI = document.getElementById ("kanalDistribusi")
+const POLISSTATUS = document.getElementById ("polisStatusData")
+const POLISSTATUS1 = document.getElementById ("polisStatus")
 const TIPE = document.getElementById ("tipe")
 const TARGET = document.getElementById ("target")
 const GUID_EMPTY = "00000000-0000-0000-0000-000000000000"
 
 document.addEventListener('DOMContentLoaded', async function () {
-    document.getElementById("polisStatus").addEventListener("change", onChangePolisStatus, false);
-    document.getElementById("polisStatusData").addEventListener ("change", onChangePolisStatusData, false);
-
     await init();
 });
+
+async function init() {
+    try {
+        await initFilter()
+        await initDashboard()
+    } catch (error) {
+        throw error;
+    }
+}
 
 async function initFilter() {
     try {
@@ -23,6 +31,8 @@ async function initFilter() {
             renderFilterKanal(),
             renderFilterTipeKinerja(),
             renderFilterTarget(),
+            renderPolisStatusData(),
+            renderPolisStatus()
         ])
 
         // event filter
@@ -32,130 +42,34 @@ async function initFilter() {
         KANALDISTRIBUSI.addEventListener ("change", initDashboard, false)
         TIPE.addEventListener ("change", initDashboard, false)
         TARGET.addEventListener ("change", initDashboard, false)
+        POLISSTATUS.addEventListener ("change", renderPerfromanceKanal, false)
+        POLISSTATUS1.addEventListener ("change", renderPerformanceByProduk, false)
     } catch (error) {
         console.error('Error in initFilter', {error})
-    }
-}
-
-async function init() {
-    try {
-        await initFilter()
-        await initDashboard()
-        // renderPolisStatus();
-        // renderPolisStatusData();
-
-
-        
-        // renderTotalGWPNewBusiness();
-        // renderTotalGWPRenewal();
-        //Chart
-        // renderPerformanceGWP();
-        // renderPerfromanceKanal();
-        // renderPerformanceByProduk();
-        // renderSharingProduk();
-        // renderTrendGwpPerBulan();
-        // renderGwpPerKepemilikan();
-        // renderCahartShareProduk();
-
-        // renderCahartAnpPerKepemilikan();
-        // renderListAnpPerKepemilikan();
-        // renderCahartAnpPerSinergiBankMandiri();
-        // renderListAnpPerSinergiBankMandiri();
-        // renderChartAnpPerSektorIndustri();
-        // renderListAnpPerSektorIndustri();
-
-        //List
-        // renderListArchievementBySumberBisnis();
-        // renderListArchievementByKanal();
-        // renderListArchievementByProduct();
-        // renderListGwpPerKepemilikan();
-        // renderListShareProduk();
-        // renderListTopBuInforce();
-        // renderListLeadingIndicator();
-        // renderListLeadingIndicatorKanal();
-        // renderDate();
-        // renderChartLeadingProposal();
-        // renderChartLeadingPolis();
-        // renderChartLeadingANP();
-        // renderListLeadingProposal();
-        // renderListLeadingPolis();
-        // renderListLeadingAnp();
-
-      
-    } catch (error) {
-        throw error;
     }
 }
 
 async function initDashboard() {
     await Promise.all([
         renderTotalGWP(),
-        renderTotalGWPNewBusiness()
+        renderTotalGWPNewBusiness(),
+        renderPerfromanceKanal(),
+        renderPerformanceByProduk(),
+        renderListArchievementByKanal(),
+        renderListArchievementByProduct(),
+        renderListArchievementBySumberBisnis(),
+        renderGwpPerKepemilikan(),
+        renderListGwpPerKepemilikan(),
+        renderCahartShareProduk(),
+        renderChartLeadingProposal(),
+        renderChartLeadingPolis(),
+        renderListLeadingPolis(),
+        renderChartLeadingANP(),
+        renderListLeadingAnp(),
+        renderTrendGwpPerBulan(),
+        renderListShareProduk(),
+        renderListLeadingProposal()
     ])
-}
-
-
-function renderDate() {
-    if (STARTDATE != null && ENDDATE) {
-        content.innerText = `${STARTDATE} - ${ENDDATE}`;
-    }
-}
-
-
-function onChangeKanalDistribusi() {
-    const kanalDistribusiId = document.getElementById("kanalDistribusi").value;
-    localStorage['kanalDistribusiId_PerformanceNasional'] = kanalDistribusiId;
-    reload();
-}
-
-function onChangePolisStatus() {
-    const polisStatusId = document.getElementById("polisStatus").value;
-    localStorage['polis_status'] = polisStatusId;
-    reload();
-}
-
-function onChangePolisStatusData() {
-    const polisStatusData = document.getElementById("polisStatusData").value;
-    localStorage['polis_status_data'] = polisStatusData;
-    reload();
-}
-function onChangeTahun() {
-    const tahun = document.getElementById("tahun").value;
-    localStorage['Tahun_Dashboard'] = tahun;
-    console.log(tahun);
-    reload();
-}
-
-function onChangeBulan() {
-    const bulanId = document.getElementById("bulan").value;
-    localStorage['BulanId_Dashboard'] = bulanId;
-    console.log(bulanId);
-    reload();
-}
-
-
-function onChangePeriode() {
-    const periode = document.getElementById("periode").value;
-    localStorage['Periode_Dashboard'] = periode;
-    console.log(periode);
-    reload();
-}
-
-function onChangeTipe() {
-    const tipe = document.getElementById("tipe").value;
-    localStorage['Tipe_Dashboard'] = tipe;
-    console.log(tipe);
-    reload();
-}
-
-function onChangeTarget() {
-    const target = document.getElementById("target").value;
-    localStorage['Target_Dashboard'] = target;
-    console.log(target);
-    reload();
-}
-function reload() {
-    window.location = `${APP_URL}/dashboard/view/performanceNasional/` + guid;
 }
 
 /**
@@ -442,13 +356,13 @@ async function getPerformanceKanal() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                Tahun: TAHUN,
-                Periode: PERIODE,
-                BulanId : BULANID,
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                PolisStatusId: POLISSTATUSDATA,
-                TipeId: TIPEID,
-                TargetId: TARGETID,
+                Tahun: TAHUN.value,
+                Periode: PERIODE.value,
+                BulanId : BULAN.value,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                PolisStatusId: POLISSTATUS.value,
+                TipeId: TIPE.value,
+                TargetId: TARGET.value
             })
         });
 
@@ -473,13 +387,13 @@ async function getPerformanceProduct() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                Tahun: TAHUN,
-                Periode: PERIODE,
-                BulanId : BULANID,
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                PolisStatusId: POLISSTATUSID,
-                TipeId: TIPEID,
-                TargetId: TARGETID,
+                Tahun: TAHUN.value,
+                Periode: PERIODE.value,
+                BulanId : BULAN.value,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                PolisStatusId: POLISSTATUS1.value,
+                TipeId: TIPE.value,
+                TargetId: TARGET.value
             })
         });
 
@@ -504,12 +418,13 @@ async function getArchievementBySumberBisnis() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                Tahun: TAHUN,
-                Periode: PERIODE,
-                BulanId : BULANID,
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                TipeId: TIPEID,
-                TargetId: TARGETID,
+                Tahun: TAHUN.value,
+                Periode: PERIODE.value,
+                BulanId : BULAN.value,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                PolisStatusId: POLISSTATUS.value,
+                TipeId: TIPE.value,
+                TargetId: TARGET.value,
             })
         });
 
@@ -534,13 +449,13 @@ async function getArchievementByProduct() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                Tahun: TAHUN,
-                Periode: PERIODE,
-                BulanId : BULANID,
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                PolisStatusId: POLISSTATUSID,
-                TipeId: TIPEID,
-                TargetId: TARGETID,
+                Tahun: TAHUN.value,
+                Periode: PERIODE.value,
+                BulanId : BULAN.value,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                PolisStatusId: POLISSTATUS.value,
+                TipeId: TIPE.value,
+                TargetId: TARGET.value,
             })
         });
 
@@ -565,13 +480,13 @@ async function getArchievementByKanalDistribusi() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                Tahun: TAHUN,
-                Periode: PERIODE,
-                BulanId : BULANID,
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                PolisStatusId: POLISSTATUSDATA,
-                TipeId: TIPEID,
-                TargetId: TARGETID,
+                Tahun: TAHUN.value,
+                Periode: PERIODE.value,
+                BulanId : BULAN.value,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                PolisStatusId: POLISSTATUS.value,
+                TipeId: TIPE.value,
+                TargetId: TARGET.value,
             })
         });
 
@@ -597,11 +512,13 @@ async function getTrendGwpPerBulan() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                Tahun: TAHUN,
-                Periode: PERIODE,
-                BulanId : BULANID,
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                TipeId: TIPEID,
+                Tahun: TAHUN.value,
+                Periode: PERIODE.value,
+                BulanId : BULAN.value,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                PolisStatusId: POLISSTATUS.value,
+                TipeId: TIPE.value,
+                TargetId: TARGET.value,
             })
         });
 
@@ -626,11 +543,13 @@ async function getGwpPerKepemilikan() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                Tahun: TAHUN,
-                Periode: PERIODE,
-                BulanId : BULANID,
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                TipeId: TIPEID,
+                Tahun: TAHUN.value,
+                Periode: PERIODE.value,
+                BulanId : BULAN.value,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                PolisStatusId: POLISSTATUS.value,
+                TipeId: TIPE.value,
+                TargetId: TARGET.value,
             })
         });
 
@@ -656,11 +575,13 @@ async function getListGwpPerKepemilikan() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                Tahun: TAHUN,
-                Periode: PERIODE,
-                BulanId : BULANID,
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                TipeId: TIPEID,
+                Tahun: TAHUN.value,
+                Periode: PERIODE.value,
+                BulanId : BULAN.value,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                PolisStatusId: POLISSTATUS.value,
+                TipeId: TIPE.value,
+                TargetId: TARGET.value,
             })
         });
 
@@ -686,7 +607,7 @@ async function getListTopBuInforce() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID
+                KanalDistribusiId: KANALDISTRIBUSI.value,
             })
         });
 
@@ -713,11 +634,13 @@ async function getListShareProduk() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                Tahun: TAHUN,
-                Periode: PERIODE,
-                BulanId : BULANID,
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                TipeId: TIPEID,
+                Tahun: TAHUN.value,
+                Periode: PERIODE.value,
+                BulanId : BULAN.value,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                PolisStatusId: POLISSTATUS.value,
+                TipeId: TIPE.value,
+                TargetId: TARGET.value,
             })
         });
 
@@ -743,11 +666,13 @@ async function getChartShareProduk(KanalDistribusiId) {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                Tahun: TAHUN,
-                Periode: PERIODE,
-                BulanId : BULANID,
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                TipeId: TIPEID,
+                Tahun: TAHUN.value,
+                Periode: PERIODE.value,
+                BulanId : BULAN.value,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                PolisStatusId: POLISSTATUS.value,
+                TipeId: TIPE.value,
+                TargetId: TARGET.value,
             })
         });
 
@@ -773,7 +698,7 @@ async function getListAnpPerKepemilikan() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID
+                KanalDistribusiId: KANALDISTRIBUSI.value,
             })
         });
 
@@ -799,7 +724,7 @@ async function getChartAnpPerKepemilikan() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID
+                KanalDistribusiId: KANALDISTRIBUSI.value,
             })
         });
 
@@ -825,7 +750,7 @@ async function getListAnpPerSinergiBankMandiri() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID
+                KanalDistribusiId: KANALDISTRIBUSI.value,
             })
         });
 
@@ -851,7 +776,7 @@ async function getChartAnpPerSinergiBankMandiri() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID
+                KanalDistribusiId: KANALDISTRIBUSI.value,
             })
         });
 
@@ -877,7 +802,7 @@ async function getListAnpPerSektorIndustri() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID
+                KanalDistribusiId: KANALDISTRIBUSI.value,
             })
         });
 
@@ -903,7 +828,7 @@ async function getChartAnpPerSektorIndustri() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID
+                KanalDistribusiId: KANALDISTRIBUSI.value,
             })
         });
 
@@ -929,12 +854,13 @@ async function getLeadingIndicatorKanal() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                Tahun: TAHUN,
-                Periode: PERIODE,
-                BulanId : BULANID,
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                TipeId: TIPEID,
-                TargetId: TARGETID,
+                Tahun: TAHUN.value,
+                Periode: PERIODE.value,
+                BulanId : BULAN.value,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                PolisStatusId: POLISSTATUS.value,
+                TipeId: TIPE.value,
+                TargetId: TARGET.value,
             })
         });
 
@@ -960,12 +886,13 @@ async function getChartLeadingProposal() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                Tahun: TAHUN,
-                Periode: PERIODE,
-                BulanId : BULANID,
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                TipeId: TIPEID,
-                TargetId: TARGETID
+                Tahun: TAHUN.value,
+                Periode: PERIODE.value,
+                BulanId : BULAN.value,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                PolisStatusId: POLISSTATUS.value,
+                TipeId: TIPE.value,
+                TargetId: TARGET.value,
             })
         });
 
@@ -991,12 +918,13 @@ async function getChartLeadingPolis() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                Tahun: TAHUN,
-                Periode: PERIODE,
-                BulanId : BULANID,
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                TipeId: TIPEID,
-                TargetId: TARGETID
+                Tahun: TAHUN.value,
+                Periode: PERIODE.value,
+                BulanId : BULAN.value,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                PolisStatusId: POLISSTATUS.value,
+                TipeId: TIPE.value,
+                TargetId: TARGET.value,
             })
         });
 
@@ -1022,12 +950,13 @@ async function getChartLeadingAnp() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                Tahun: TAHUN,
-                Periode: PERIODE,
-                BulanId : BULANID,
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                TipeId: TIPEID,
-                TargetId: TARGETID
+                Tahun: TAHUN.value,
+                Periode: PERIODE.value,
+                BulanId : BULAN.value,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                PolisStatusId: POLISSTATUS.value,
+                TipeId: TIPE.value,
+                TargetId: TARGET.value,
             })
         });
 
@@ -1083,20 +1012,14 @@ async function renderPolisStatus() {
             throw result.Message;
         }
 
-        const selectOption = document.querySelector('#polisStatus');
-        var opt = document.createElement('option');
-        opt.value = GUID_EMPTY;
-        opt.innerHTML = "ALL";
-        selectOption.appendChild(opt);
+        const dataPolisStatus = result.ListPolisStatatus;
+        const firstOpt = new Option("ALL", GUID_EMPTY, true, true);
+        POLISSTATUS1.append(firstOpt)
 
-        result.ListPolisStatatus.forEach(item => {
-            var opt = document.createElement('option');
-            opt.value = item.Id;
-            opt.innerHTML = item.Name;
-            selectOption.appendChild(opt);
+        dataPolisStatus.forEach(item => {
+            const opt = new Option(item.Name, item.Id, false, false);
+            POLISSTATUS1.append(opt);
         });
-
-        selectOption.value = POLISSTATUSID;
 
     } catch (error) {
         throw error;
@@ -1116,20 +1039,14 @@ async function renderPolisStatusData() {
             throw result.Message;
         }
 
-        const selectOption = document.querySelector('#polisStatusData');
-        var opt = document.createElement('option');
-        opt.value = GUID_EMPTY;
-        opt.innerHTML = "ALL";
-        selectOption.appendChild(opt);
+        const dataPolisStatus = result.ListPolisStatatus;
+        const firstOpt = new Option("ALL", GUID_EMPTY, true, true);
+        POLISSTATUS.append(firstOpt)
 
-        result.ListPolisStatatus.forEach(item => {
-            var opt = document.createElement('option');
-            opt.value = item.Id;
-            opt.innerHTML = item.Name;
-            selectOption.appendChild(opt);
+        dataPolisStatus.forEach(item => {
+            const opt = new Option(item.Name, item.Id, false, false);
+            POLISSTATUS.append(opt);
         });
-
-        selectOption.value = POLISSTATUSDATA;
 
     } catch (error) {
         throw error;
@@ -1478,7 +1395,7 @@ async function renderPerformanceGWP() {
  * @returns VIEW CHART
  */
 async function renderPerfromanceKanal() {
-    const req = await getPerformanceKanal(KANALDISTRIBUSIID);
+    const req = await getPerformanceKanal(KANALDISTRIBUSI);
     const result = req.PerformanceKanalResult;
 
     if (!result.Status.Success) {
@@ -1566,7 +1483,7 @@ async function renderPerfromanceKanal() {
  * @returns VIEW CHART
  */
 async function renderPerformanceByProduk() {
-    const req = await getPerformanceProduct(KANALDISTRIBUSIID);
+    const req = await getPerformanceProduct(KANALDISTRIBUSI);
     const result = req.PerformanceByProductResult;
 
     if (!result.Status.Success) {
@@ -1657,7 +1574,7 @@ async function renderPerformanceByProduk() {
  * @returns VIEW CHART
  */
 async function renderListArchievementBySumberBisnis() {
-    const req = await getArchievementBySumberBisnis(KANALDISTRIBUSIID);
+    const req = await getArchievementBySumberBisnis();
     const result = req.ArchievementBySumberBisnisResult;
 
     if (!result.Status.Success) {
@@ -1666,6 +1583,10 @@ async function renderListArchievementBySumberBisnis() {
 
     let seqNo = 1;
     const tbody = document.querySelector('#tableDetailAchievementBySumberBisnis tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
     result.ListItem.forEach(item => {
 
         let rows =
@@ -1697,7 +1618,7 @@ async function renderListArchievementBySumberBisnis() {
  * @returns VIEW CHART
  */
 async function renderListArchievementByKanal() {
-    const req = await getArchievementByKanalDistribusi(KANALDISTRIBUSIID);
+    const req = await getArchievementByKanalDistribusi();
     const result = req.ArchievementByKanalDistribusiResult;
 
     if (!result.Status.Success) {
@@ -1706,6 +1627,10 @@ async function renderListArchievementByKanal() {
 
     let seqNo = 1;
     const tbody = document.querySelector('#tableDetailAchievementByKanalDistribusi tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
     result.ListItem.forEach(item => {
         let rows =
             `<td class="text-center">${seqNo++}</td>` +
@@ -1718,7 +1643,12 @@ async function renderListArchievementByKanal() {
         tr.innerHTML = rows;
         tbody.appendChild(tr);
     });
+
     const tfoot = document.querySelector('#tableDetailAchievementByKanalDistribusi tfoot');
+    while (tfoot.firstChild) {
+        tfoot.removeChild(tfoot.firstChild);
+    }
+
     let rowsTotal =
         `<td></td>` +
         `<td style="color:white;" class="text-center align-middle">TOTAL</td>` +
@@ -1744,6 +1674,10 @@ async function renderListArchievementByProduct() {
 
     let seqNo = 1;
     const tbody = document.querySelector('#tableDetailAchievementByProduk tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
     result.ListItem.forEach(item => {
         let rows =
             `<td class="text-center">${seqNo++}</td>` +
@@ -1758,6 +1692,10 @@ async function renderListArchievementByProduct() {
     });
 
     const tfoot = document.querySelector('#tableDetailAchievementByProduk tfoot');
+    while (tfoot.firstChild) {
+        tfoot.removeChild(tfoot.firstChild);
+    }
+
     let rowsTotal =
         `<td></td>` +
         `<td class="align-middle" style="color: #ffffff" class="text-center align-middle">TOTAL</td>` +
@@ -1847,7 +1785,7 @@ async function renderSharingProduk() {
  * @returns VIEW CHART
  */
 async function renderTrendGwpPerBulan() {
-    const req = await getTrendGwpPerBulan(KANALDISTRIBUSIID);
+    const req = await getTrendGwpPerBulan();
     const result = req.RenewalVsNewBusinessResult;
 
     if (!result.Status.Success) {
@@ -2038,7 +1976,7 @@ async function renderGwpPerKepemilikan() {
  * @returns VIEW CHART
  */
 async function renderListGwpPerKepemilikan() {
-    const req = await getListGwpPerKepemilikan(KANALDISTRIBUSIID);
+    const req = await getListGwpPerKepemilikan();
     const result = req.ListGwpPerKepemilikanResult;
 
     if (!result.Status.Success) {
@@ -2047,6 +1985,10 @@ async function renderListGwpPerKepemilikan() {
 
     let seqNo = 1;
     const tbody = document.querySelector('#tableListGwpPerKepemilikan tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
     result.ListItem.forEach(item => {
         let rows =
             `<td class="text-center">${seqNo++}</td>` +
@@ -2104,43 +2046,6 @@ async function renderListTopBuInforce() {
     trTotal.innerHTML = rowsTotal;
     tbody.appendChild(trTotal);
 }
-
-/**
- * RENDER LIST LEADING INDICATOR
- * @returns VIEW CHART
- */
-// async function renderListLeadingIndicator() {
-//     const req = await getLeadingIndicator(KANALDISTRIBUSIID);
-//     const result = req.LeadingIndicatorNewBusinessKanalResult;
-
-//     if (!result.Status.Success) {
-//         throw result.Message;
-//     }
-
-//     let seqNo = 1;
-//     const tbody = document.querySelector('#tableListLeadingIndicator tbody');
-//     result.ListItem.forEach(item => {
-//         let rows =
-//             `<td class="text-center">${seqNo++}</td>` +
-//             `<td>${item.Name}</td>` +
-//             `<td class="text-center">${item.Item1}</td>` +
-//             `<td class="text-center">${item.Item2}</td>` +
-//             `<td class="text-center">${item.Item3}</td>` 
-//         let tr = document.createElement('tr');
-//         tr.innerHTML = rows;
-//         tbody.appendChild(tr);
-//     });
-//     let rowsTotal =
-//         `<td style="background-color: #16aaff; color: white; font-wigth: bold" class="text-center" colspan="2">TOTAL</td>` +
-//         `<td style="background-color: #16aaff; color: white; font-wigth: bold" class="text-center">${result.Total.Item1}</td>` +
-//         `<td style="background-color: #16aaff; color: white; font-wigth: bold" class="text-center">${result.Total.Item2}</td>` +
-//         `<td style="background-color: #16aaff; color: white; font-wigth: bold" class="text-center">${result.Total.Item3}</td>` 
-//     let trTotal = document.createElement('tr');
-//     trTotal.style.backgroundColor = "#16aaff";
-//     trTotal.style.fontWeight = "bold";
-//     trTotal.innerHTML = rowsTotal;
-//     tbody.appendChild(trTotal);
-// }
 
 /**
  * RENDER SHARING PRODUK
@@ -2248,6 +2153,10 @@ async function renderListShareProduk() {
 
     let seqNo = 1;
     const tbody = document.querySelector('#tableListShareProduk tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    } 
+
     result.ListItem.forEach(item => {
         let rows =
             `<td class="text-center">${seqNo++}</td>` +
@@ -2259,6 +2168,10 @@ async function renderListShareProduk() {
         tbody.appendChild(tr);
     });
     const tfoot = document.querySelector('#tableListShareProduk tfoot');
+    while (tfoot.firstChild) {
+        tfoot.removeChild(tfoot.firstChild);
+    }
+
     let rowsTotal =
         `<td style="background-color: #16aaff; color: white; font-wigth: bold" class="text-center align-middle" colspan="2">TOTAL</td>` +
         `<td style="background-color: #16aaff; color: white; font-wigth: bold" class="text-right align-middle">${result.Total.Item1}</td>` +
@@ -2689,7 +2602,6 @@ async function renderChartLeadingProposal() {
     const req = await getChartLeadingProposal();
     const result = req.LeadingProposalResult;
 
-    console.log(req);
     if (!result.Status.Success) {
         throw result.Status.Message;
     }
@@ -2839,7 +2751,6 @@ async function renderChartLeadingPolis() {
     const req = await getChartLeadingPolis();
     const result = req.LeadingPolisResult;
 
-    console.log(req);
     if (!result.Status.Success) {
         throw result.Status.Message;
     }
@@ -2981,7 +2892,6 @@ async function renderChartLeadingANP() {
     const req = await getChartLeadingAnp();
     const result = req.LeadingAnpResult;
 
-    console.log(req);
     if (!result.Status.Success) {
         throw result.Status.Message;
     }
@@ -3128,9 +3038,12 @@ async function renderListLeadingProposal() {
         throw result.Status.Message;
     }
 
-    const tbody = document.querySelector('#tableListLeadingIndicatorProposal tbody');
-    
     let seqNo = 1;
+    const tbody = document.querySelector('#tableListLeadingIndicatorProposal tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
     result.ListItem.forEach(item => {
         let rows =
             `<td style="text-align: center">${seqNo}</td>` +
@@ -3145,6 +3058,10 @@ async function renderListLeadingProposal() {
         seqNo++;
     });
     const tfoot = document.querySelector('#tableListLeadingIndicatorProposal tfoot');
+    while (tfoot.firstChild) {
+        tfoot.removeChild(tfoot.firstChild);
+    }
+
     let rowsTotal =
         `<td class="align-middle" style="background-color: #16aaff; text-align: center; color:white; font-weight:bold" colspan="2">TOTAL</td>` +
         `<td class="align-middle" style="background-color: #16aaff; text-align: center; color:white; font-weight:bold">${result.Total.Item1}</td>` +
@@ -3168,9 +3085,12 @@ async function renderListLeadingPolis() {
         throw result.Status.Message;
     }
 
-    const tbody = document.querySelector('#tableListLeadingIndicatorPolis tbody');
-    
     let seqNo = 1;
+    const tbody = document.querySelector('#tableListLeadingIndicatorPolis tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+    
     result.ListItem.forEach(item => {
         let rows =
             `<td style="text-align: center">${seqNo}</td>` +
@@ -3185,6 +3105,10 @@ async function renderListLeadingPolis() {
         seqNo++;
     });
     const tfoot = document.querySelector('#tableListLeadingIndicatorPolis tfoot');
+    while (tfoot.firstChild) {
+        tfoot.removeChild(tfoot.firstChild);
+    }
+
     let rowsTotal =
         `<td class="align-middle" style="background-color: #16aaff; text-align: center; color:white; font-weight:bold" colspan="2">TOTAL</td>` +
         `<td class="align-middle" style="background-color: #16aaff; text-align: center; color:white; font-weight:bold">${result.Total.Item4}</td>` +
@@ -3208,9 +3132,12 @@ async function renderListLeadingAnp() {
         throw result.Status.Message;
     }
 
-    const tbody = document.querySelector('#tableListLeadingIndicatorAnp tbody');
-    
     let seqNo = 1;
+    const tbody = document.querySelector('#tableListLeadingIndicatorAnp tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+    
     result.ListItem.forEach(item => {
         let rows =
             `<td style="text-align: center">${seqNo}</td>` +
@@ -3225,6 +3152,10 @@ async function renderListLeadingAnp() {
         seqNo++;
     });
     const tfoot = document.querySelector('#tableListLeadingIndicatorAnp tfoot');
+    while (tfoot.firstChild) {
+        tfoot.removeChild(tfoot.firstChild);
+    }
+
     let rowsTotal =
         `<td class="align-middle" style="background-color: #16aaff; text-align: center; color:white; font-weight:bold" colspan="2">TOTAL</td>` +
         `<td class="align-middle" style="background-color: #16aaff; text-align: center; color:white; font-weight:bold">${result.Total.Item10}</td>` +

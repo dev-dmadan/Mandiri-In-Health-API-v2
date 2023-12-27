@@ -1,95 +1,72 @@
-
-document.getElementById("kanalDistribusi").addEventListener("change", onChangeKanalDistribusi, false);
-document.getElementById("produk").addEventListener("change", onChangeProduct, false);
-document.getElementById("bulan").addEventListener("change", onChangeBulan, false);
-document.getElementById("tahun").addEventListener("change", onChangeTahun, false);
-document.getElementById("periode").addEventListener("change", onChangePeriode, false);
-
-var PERIODE = localStorage['Periode_Report'];
-var KANALDISTRIBUSIID = localStorage['kanalDistribusiId_Dashboard'];
-var TAHUN = localStorage['Tahun_Dashboard'];
-var BULANID = localStorage['BulanId_Dashboard'];
-var PRODUKID = localStorage['ProdukId_Dashboard'];
+const PERIODE = document.getElementById("periode")
+const BULAN = document.getElementById("bulan")
+const TAHUN = document.getElementById("tahun")
+const KANALDISTRIBUSI = document.getElementById ("kanalDistribusi")
+const POLISSTATUS = document.getElementById ("polisStatusData")
+const POLISSTATUS1 = document.getElementById ("polisStatus")
+const TIPE = document.getElementById ("tipe")
+const TARGET = document.getElementById ("target")
+const PRODUK = document.getElementById ("produk")
+const GUID_EMPTY = "00000000-0000-0000-0000-000000000000"
 
 document.addEventListener('DOMContentLoaded', function () {
-    renderFilterKalanDistribusi();
-    console.log("Tes......");
-    renderFilterProduk();
-    renderFilterBulan();
-    renderFilterTahun();
-    renderFilterPeriode();
-
-    renderTotalPipelineKomitmen();
-    renderTotalPipelineQuotation();
-    renderTotalPipelineClosing();
-    renderTotalPipelineLoss();
-    renderTotalPipelineInProgress();
-    renderTotalPipelineExpiredQuotation();
-
-    renderListPipelineKomitmenKanal();
-    renderListPipelineProgress();
-
-    renderChartPipelineByProgress();
-    renderChartPipelineKomitmenByKanal();
-
-    renderListTopBuKomitmen();
-    renderListTopBuQuotation();
-    renderListTopBuClosing();
-    renderListTopBuLoss();
-    renderListTopBuInProgress();
-    renderListTopBuExpiredQuotation();
-    renderListRekapPipelineNewBusiness();
-
-    // isFilterKanalVisible(false);
-
+    init()
 });
 
-// function isFilterKanalVisible(visible = true) {
-//     if (!visible) {
-//         const kanitfilter = document.querySelector('#kanalfilter');
-//         kanitfilter.childNodes[1].firstElementChild.remove();
-//     } else {
-//         renderFilterKanalDistribusi();
-//     }
-// }
-function onChangeKanalDistribusi() {
-    const kanalDistribusiId = document.getElementById("kanalDistribusi").value;
-    localStorage['kanalDistribusiId_Dashboard'] = kanalDistribusiId;
-    reload();
-    console.log(kanalDistribusiId);
+async function init() {
+    try {
+        await initFilter()
+        await initDashboard()
+    } catch (error) {
+        throw error;
+    }
 }
 
-function onChangeTahun() {
-    const tahun = document.getElementById("tahun").value;
-    localStorage['Tahun_Dashboard'] = tahun;
-    console.log(tahun);
-    reload();
+async function initFilter() {
+    try {
+        renderFilterPeriode()
+        renderFilterTahun()
+        
+        await Promise.all([
+            renderFilterBulan(),
+            renderFilterKanal(),
+            renderFilterProduk()
+        ])
+
+        // event filter
+        PERIODE.addEventListener("change", initDashboard, false)
+        BULAN.addEventListener("change", initDashboard, false)
+        TAHUN.addEventListener("change", initDashboard, false)
+        KANALDISTRIBUSI.addEventListener ("change", initDashboard, false)
+        TIPE.addEventListener ("change", initDashboard, false)
+        PRODUK.addEventListener ("change", initDashboard, false)
+        // TARGET.addEventListener ("change", initDashboard, false)
+        // POLISSTATUS.addEventListener ("change", renderPerfromanceKanal, false)
+        // POLISSTATUS1.addEventListener ("change", renderPerformanceByProduk, false)
+    } catch (error) {
+        console.error('Error in initFilter', {error})
+    }
 }
 
-function onChangeBulan() {
-    const bulanId = document.getElementById("bulan").value;
-    localStorage['BulanId_Dashboard'] = bulanId;
-    console.log(bulanId);
-    reload();
-}
+async function initDashboard() {
+    await Promise.all([
+        renderTotalPipelineKomitmen(),
+        renderTotalPipelineQuotation(),
+        renderTotalPipelineClosing(),
+        renderTotalPipelineLoss(),
+        renderTotalPipelineInProgress(),
+        renderTotalPipelineExpiredQuotation(),
+        renderListPipelineKomitmenKanal(),
+        renderListPipelineProgress(),
+        renderListTopBuKomitmen(),
+        renderListTopBuQuotation(),
+        renderListTopBuLoss(),
+        renderListTopBuInProgress(),
+        renderListTopBuExpiredQuotation(),
+        renderListRekapPipelineNewBusiness()
 
-function onChangeProduct() {
-    const produkId = document.getElementById("produk").value;
-    localStorage['ProdukId_Dashboard'] = produkId;
-    console.log(produkId);
-    reload();
+    ])
 }
-function onChangePeriode() {
-    const periode = document.getElementById("periode").value;
-    localStorage['Periode_Report'] = periode;
-    console.log(periode);
-    reload();
-}
-
-function reload() {
-    window.location = `${APP_URL}/dashboard/view/pipelineNewBusinessDashboard`;
-}
-
 /**
 ** ============================================== GET DATA ==============================================
 */
@@ -98,16 +75,13 @@ function reload() {
  * GET DATA KANAL DISTRIBUSI
  * @returns LIST
  */
-async function getKanalDistribusiId() {
+async function getKanalDistribusi() {
     try {
         const headers = new Headers();
         headers.append("Content-Type", "application/json");
         const req = await fetch(`${APP_URL}/dashboard/api/dashboard-get-kanal-distribusi?SecretKey=${SECRET_KEY}`, {
             method: 'POST',
-            headers: headers,
-            body: JSON.stringify({
-
-            })
+            headers: headers
         });
 
         if (!req.ok) {
@@ -129,10 +103,7 @@ async function getProduk() {
         headers.append("Content-Type", "application/json");
         const req = await fetch(`${APP_URL}/dashboard/api/dashboard-get-produk?SecretKey=${SECRET_KEY}`, {
             method: 'POST',
-            headers: headers,
-            body: JSON.stringify({
-
-            })
+            headers: headers
         });
 
         if (!req.ok) {
@@ -154,10 +125,7 @@ async function getBulan() {
         headers.append("Content-Type", "application/json");
         const req = await fetch(`${APP_URL}/dashboard/api/dashboard-get-bulan?SecretKey=${SECRET_KEY}`, {
             method: 'POST',
-            headers: headers,
-            body: JSON.stringify({
-
-            })
+            headers: headers
         });
 
         if (!req.ok) {
@@ -182,10 +150,10 @@ async function getTotalPipelineKomitmen() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                Tahun: TAHUN,
-                BulanId: BULANID,
-                ProdukId: PRODUKID,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                Tahun: TAHUN.value,
+                BulanId: BULAN.value,
+                ProdukId: PRODUK.value,
             })
         });
 
@@ -211,10 +179,10 @@ async function getTotalPipelineQuotation() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                Tahun: TAHUN,
-                BulanId: BULANID,
-                ProdukId: PRODUKID,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                Tahun: TAHUN.value,
+                BulanId: BULAN.value,
+                ProdukId: PRODUK.value,
             })
         });
 
@@ -240,10 +208,10 @@ async function getTotalPipelineClosing() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                Tahun: TAHUN,
-                BulanId: BULANID,
-                ProdukId: PRODUKID,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                Tahun: TAHUN.value,
+                BulanId: BULAN.value,
+                ProdukId: PRODUK.value,
             })
         });
 
@@ -269,10 +237,10 @@ async function getTotalPipelineLoss() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                Tahun: TAHUN,
-                BulanId: BULANID,
-                ProdukId: PRODUKID,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                Tahun: TAHUN.value,
+                BulanId: BULAN.value,
+                ProdukId: PRODUK.value,
             })
         });
 
@@ -298,10 +266,10 @@ async function getTotalPipelineInProgress() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                Tahun: TAHUN,
-                BulanId: BULANID,
-                ProdukId: PRODUKID,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                Tahun: TAHUN.value,
+                BulanId: BULAN.value,
+                ProdukId: PRODUK.value,
             })
         });
 
@@ -327,10 +295,10 @@ async function getTotalPipelineExpiredQuotation() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                Tahun: TAHUN,
-                BulanId: BULANID,
-                ProdukId: PRODUKID,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                Tahun: TAHUN.value,
+                BulanId: BULAN.value,
+                ProdukId: PRODUK.value,
             })
         });
 
@@ -356,10 +324,10 @@ async function getListPipelineKomitmenKanal() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                Tahun: TAHUN,
-                BulanId: BULANID,
-                ProdukId: PRODUKID,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                Tahun: TAHUN.value,
+                BulanId: BULAN.value,
+                ProdukId: PRODUK.value,
             })
         });
 
@@ -385,10 +353,10 @@ async function getListPipelineByProgress() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                Tahun: TAHUN,
-                BulanId: BULANID,
-                ProdukId: PRODUKID,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                Tahun: TAHUN.value,
+                BulanId: BULAN.value,
+                ProdukId: PRODUK.value,
             })
         });
 
@@ -414,10 +382,10 @@ async function getChartPipelineByProgress() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                Tahun: TAHUN,
-                BulanId: BULANID,
-                ProdukId: PRODUKID,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                Tahun: TAHUN.value,
+                BulanId: BULAN.value,
+                ProdukId: PRODUK.value,
             })
         });
 
@@ -472,10 +440,10 @@ async function getListTopBuKomitmen() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                Tahun: TAHUN,
-                BulanId: BULANID,
-                ProdukId: PRODUKID,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                Tahun: TAHUN.value,
+                BulanId: BULAN.value,
+                ProdukId: PRODUK.value,
             })
         });
 
@@ -501,10 +469,10 @@ async function getListTopBuQuotation() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                Tahun: TAHUN,
-                BulanId: BULANID,
-                ProdukId: PRODUKID,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                Tahun: TAHUN.value,
+                BulanId: BULAN.value,
+                ProdukId: PRODUK.value,
             })
         });
 
@@ -530,10 +498,10 @@ async function getListTopBuClosing() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                Tahun: TAHUN,
-                BulanId: BULANID,
-                ProdukId: PRODUKID,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                Tahun: TAHUN.value,
+                BulanId: BULAN.value,
+                ProdukId: PRODUK.value,
             })
         });
 
@@ -559,10 +527,10 @@ async function getListTopBuLoss() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                Tahun: TAHUN,
-                BulanId: BULANID,
-                ProdukId: PRODUKID,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                Tahun: TAHUN.value,
+                BulanId: BULAN.value,
+                ProdukId: PRODUK.value,
             })
         });
 
@@ -588,10 +556,10 @@ async function getListTopBuInProgress() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                Tahun: TAHUN,
-                BulanId: BULANID,
-                ProdukId: PRODUKID,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                Tahun: TAHUN.value,
+                BulanId: BULAN.value,
+                ProdukId: PRODUK.value,
             })
         });
 
@@ -617,10 +585,10 @@ async function getListTopBuExpiredQuotation() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                Tahun: TAHUN,
-                BulanId: BULANID,
-                ProdukId: PRODUKID,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                Tahun: TAHUN.value,
+                BulanId: BULAN.value,
+                ProdukId: PRODUK.value,
             })
         });
 
@@ -646,10 +614,10 @@ async function getListRekapPipelineNewBusiness() {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
-                KanalDistribusiId: KANALDISTRIBUSIID,
-                Tahun: TAHUN,
-                BulanId: BULANID,
-                ProdukId: PRODUKID,
+                KanalDistribusiId: KANALDISTRIBUSI.value,
+                Tahun: TAHUN.value,
+                BulanId: BULAN.value,
+                ProdukId: PRODUK.value,
             })
         });
 
@@ -671,31 +639,23 @@ async function getListRekapPipelineNewBusiness() {
  * RENDER FILTER KANAL DISTRIBUSI
  * @returns VIEW
  */
-async function renderFilterKalanDistribusi() {
+async function renderFilterKanal() {
     try {
-        const req = await getKanalDistribusiId();
+        const req = await getKanalDistribusi();
         const result = req.GetKanalDistribusiResult;
 
         if (!result.Success) {
             throw result.Message;
         }
 
-        const selectOption = document.querySelector('#kanalDistribusi');
-        var dis = document.createAttribute('selected');
-        var opt = document.createElement('option');
-        opt.value = "00000000-0000-0000-0000-000000000000";
-        opt.innerHTML = "ALL KANAL";
-        selectOption.appendChild(opt);
+        const dataKanal = result.ListKanalDistribusi;
+        const firstOpt = new Option("ALL KANAL", GUID_EMPTY, true, true);
+        KANALDISTRIBUSI.append(firstOpt)
 
-        result.ListKanalDistribusi.forEach(item => {
-            var opt = document.createElement('option');
-            opt.value = item.Id;
-            opt.innerHTML = item.NamaKC;
-            selectOption.appendChild(opt);
+        dataKanal.forEach(item => {
+            const opt = new Option(item.NamaKC, item.Id, false, false);
+            KANALDISTRIBUSI.append(opt);
         });
-
-        selectOption.value = KANALDISTRIBUSIID;
-
     } catch (error) {
         throw error;
     }
@@ -714,20 +674,14 @@ async function renderFilterProduk() {
             throw result.Message;
         }
 
-        const selectOption = document.querySelector('#produk');
-        var opt = document.createElement('option');
-        opt.value = "00000000-0000-0000-0000-000000000000";
-        opt.innerHTML = "ALL PRODUK";
-        selectOption.appendChild(opt);
+        const dataProduct = result.ListProduk;
+        const firstOpt = new Option("ALL PRODUCT", GUID_EMPTY, true, true);
+        PRODUK.append(firstOpt)
 
-        result.ListProduk.forEach(item => {
-            var opt = document.createElement('option');
-            opt.value = item.Id;
-            opt.innerHTML = item.Name;
-            selectOption.appendChild(opt);
+        dataProduct.forEach(item => {
+            const opt = new Option(item.Name, item.Id, false, false);
+            PRODUK.append(opt);
         });
-
-        selectOption.value = PRODUKID;
 
     } catch (error) {
         throw error;
@@ -747,21 +701,13 @@ async function renderFilterBulan() {
             throw result.Message;
         }
 
-        const selectOption = document.querySelector('#bulan');
-        var opt = document.createElement('option');
-        opt.value = "00000000-0000-0000-0000-000000000000";
-        opt.innerHTML = "ALL BULAN";
-        selectOption.appendChild(opt);
+        const firstOpt = new Option("ALL BULAN", GUID_EMPTY, true, true);
+        BULAN.append(firstOpt);
 
         result.ListBulan.forEach(item => {
-            var opt = document.createElement('option');
-            opt.value = item.Id;
-            opt.innerHTML = item.Name;
-            selectOption.appendChild(opt);
+            const opt = new Option(item.Name, item.Id, false, false)
+            BULAN.append(opt);
         });
-
-        selectOption.value = BULANID;
-
     } catch (error) {
         throw error;
     }
@@ -771,29 +717,10 @@ async function renderFilterBulan() {
  * RENDER FILTER TAHUN
  * @returns VIEW
  */
-async function renderFilterTahun() {
+function renderFilterTahun() {
     try {
-        // const data = [
-        //     "2021",
-        //     "2023"
-        // ];
-
-        const selectOption = document.querySelector('#tahun');
-        var opt = document.createElement('option');
-        opt.value = "2023";
-        opt.innerHTML = "2023";
-        opt.selected = true;
-        selectOption.appendChild(opt);
-
-        data.forEach(item => {
-            var opt = document.createElement('option');
-            opt.value = item;
-            opt.innerHTML = item;
-            selectOption.appendChild(opt);
-        });
-
-        selectOption.value = TAHUN;
-
+        const firstOpt = new Option("2023", "2023", true, true);
+        TAHUN.append(firstOpt);
     } catch (error) {
         throw error;
     }
@@ -803,29 +730,16 @@ async function renderFilterTahun() {
  * RENDER FILTER PERIODE
  * @returns VIEW
  */
-async function renderFilterPeriode() {
+function renderFilterPeriode() {
     try {
         const data = [
-            "Mtd",
-            "Ytd"
+            new Option("Mtd", "Mtd", true, true),
+            new Option("Ytd", "Ytd", false, false)
         ];
 
-        const selectOption = document.querySelector('#periode');
-        var opt = document.createElement('option');
-        opt.value = "PERIODE";
-        opt.innerHTML = "PERIODE";
-        opt.selected = true;
-        selectOption.appendChild(opt);
-
         data.forEach(item => {
-            var opt = document.createElement('option');
-            opt.value = item;
-            opt.innerHTML = item;
-            selectOption.appendChild(opt);
-        });
-
-        selectOption.value = PERIODE;
-
+            PERIODE.append(item)
+        })
     } catch (error) {
         throw error;
     }
@@ -969,6 +883,7 @@ async function renderTotalPipelineExpiredQuotation() {
  */
 async function renderListPipelineKomitmenKanal() {
     const req = await getListPipelineKomitmenKanal();
+    console.log(req)
     const result = req.PipelineKomitmenNewBusinessByKanalResult;
 
     if (!result.Status.Success) {
@@ -977,6 +892,10 @@ async function renderListPipelineKomitmenKanal() {
 
     let seqNo = 1;
     const tbody = document.querySelector('#tableListPipelineKomitmenKanal tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
     result.ListItem.forEach(item => {
 
         let rows =
@@ -989,6 +908,10 @@ async function renderListPipelineKomitmenKanal() {
         tbody.appendChild(tr);
     });
     const tfoot = document.querySelector('#tableListPipelineKomitmenKanal tfoot');
+    while (tfoot.firstChild) {
+        tfoot.removeChild(tfoot.firstChild);
+    }
+
     let rowsTotal =
         `<td></td>` +
         `<td class="text-center align-middle">TOTAL</td>` +
@@ -1013,6 +936,10 @@ async function renderListPipelineProgress() {
 
     let seqNo = 1;
     const tbody = document.querySelector('#tableListPipelineByProgress tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
     result.ListItem.forEach(item => {
 
         let rows =
@@ -1025,6 +952,10 @@ async function renderListPipelineProgress() {
         tbody.appendChild(tr);
     });
     const tfoot = document.querySelector('#tableListPipelineByProgress tfoot');
+    while (tfoot.firstChild) {
+        tfoot.removeChild(tfoot.firstChild);
+    }
+
     let rowsTotal =
         `<td></td>` +
         `<td class="text-center align-middle">TOTAL</td>` +
@@ -1256,6 +1187,10 @@ async function renderListTopBuKomitmen() {
 
     let seqNo = 1;
     const tbody = document.querySelector('#tableTopBuKomitmen tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
     result.ListItem.forEach(item => {
 
         let rows =
@@ -1269,6 +1204,10 @@ async function renderListTopBuKomitmen() {
         tbody.appendChild(tr);
     });
     const tfoot = document.querySelector('#tableTopBuKomitmen tfoot');
+    while (tfoot.firstChild) {
+        tfoot.removeChild(tfoot.firstChild);
+    }
+
     let rowsTotal = `<td></td>` +
         `<td class="text-center">TOTAL</td>` +
         `<td class="text-right">${result.Total.Item1}</td>` +
@@ -1293,6 +1232,10 @@ async function renderListTopBuQuotation() {
 
     let seqNo = 1;
     const tbody = document.querySelector('#tableTopBuQuotation tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
     result.ListItem.forEach(item => {
 
         let rows =
@@ -1306,6 +1249,10 @@ async function renderListTopBuQuotation() {
         tbody.appendChild(tr);
     });
     const tfoot = document.querySelector('#tableTopBuQuotation tfoot');
+    while (tfoot.firstChild) {
+        tfoot.removeChild(tfoot.firstChild);
+    }
+
     let rowsTotal =
         `<td></td>` +
         `<td class="text-center">TOTAL</td>` +
@@ -1331,6 +1278,10 @@ async function renderListTopBuClosing() {
 
     let seqNo = 1;
     const tbody = document.querySelector('#tableTopBuClosing tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
     result.ListItem.forEach(item => {
 
         let rows =
@@ -1344,6 +1295,10 @@ async function renderListTopBuClosing() {
         tbody.appendChild(tr);
     });
     const tfoot = document.querySelector('#tableTopBuClosing tfoot');
+    while (tfoot.firstChild) {
+        tfoot.removeChild(tfoot.firstChild);
+    }
+
     let rowsTotal =
         `<td></td>` +
         `<td class="text-center">TOTAL</td>` +
@@ -1369,6 +1324,10 @@ async function renderListTopBuLoss() {
 
     let seqNo = 1;
     const tbody = document.querySelector('#tableTopBuLoss tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
     result.ListItem.forEach(item => {
 
         let rows =
@@ -1382,6 +1341,10 @@ async function renderListTopBuLoss() {
         tbody.appendChild(tr);
     });
     const tfoot = document.querySelector('#tableTopBuLoss tfoot');
+    while (tfoot.firstChild) {
+        tfoot.removeChild(tfoot.firstChild);
+    }
+
     let rowsTotal =
         `<td></td>` +
         `<td class="text-center">TOTAL</td>` +
@@ -1407,6 +1370,10 @@ async function renderListTopBuInProgress() {
 
     let seqNo = 1;
     const tbody = document.querySelector('#tableTopBuInProgress tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
     result.ListItem.forEach(item => {
 
         let rows =
@@ -1420,6 +1387,10 @@ async function renderListTopBuInProgress() {
         tbody.appendChild(tr);
     });
     const tfoot = document.querySelector('#tableTopBuInProgress tfoot');
+    while (tfoot.firstChild) {
+        tfoot.removeChild(tfoot.firstChild);
+    }
+
     let rowsTotal =
         `<td></td>` +
         `<td class="text-center">TOTAL</td>` +
@@ -1445,6 +1416,10 @@ async function renderListTopBuExpiredQuotation() {
 
     let seqNo = 1;
     const tbody = document.querySelector('#tableTopBuExpiredQuotation tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
     result.ListItem.forEach(item => {
 
         let rows =
@@ -1458,6 +1433,10 @@ async function renderListTopBuExpiredQuotation() {
         tbody.appendChild(tr);
     });
     const tfoot = document.querySelector('#tableTopBuExpiredQuotation tfoot');
+    while (tfoot.firstChild) {
+        tfoot.removeChild(tfoot.firstChild);
+    }
+
     let rowsTotal =
         `<td></td>` +
         `<td class="text-center">TOTAL</td>` +
@@ -1483,6 +1462,10 @@ async function renderListRekapPipelineNewBusiness() {
 
     let seqNo = 1;
     const tbody = document.querySelector('#tableRekapPipelineNewBusiness tbody');
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+
     result.ListItem.forEach(item => {
 
         let rows =
@@ -1501,6 +1484,10 @@ async function renderListRekapPipelineNewBusiness() {
         tbody.appendChild(tr);
     });
     const tfoot = document.querySelector('#tableRekapPipelineNewBusiness tfoot');
+    while (tfoot.firstChild) {
+        tfoot.removeChild(tfoot.firstChild);
+    }
+
     let rowsTotal =
         `<td class="text-center" colspan = "2">TOTAL</td>` +
         `<td class="text-center">${result.Total.Item3}</td>` +
